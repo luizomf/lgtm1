@@ -1,7 +1,7 @@
 set shell := ["bash", "-cu"]
 set dotenv-load := true
 
-compose_file := "compose.yaml"
+compose_file := "docker/compose.yaml"
 env_file := ".env"
 
 # List all just recipes
@@ -23,6 +23,18 @@ compose *ARGS:
 [group('🚨 danger')]
 nukeall:
   @-just _docker stop `docker ps -a -q` >/dev/null 2&>1 || true
+  @-just _docker rm `docker ps -a -q` >/dev/null 2&>1 || true
+
+  @-just _docker volume `docker volume ls -q` >/dev/null 2&>1 || true
+  @-just _docker network `docker network ls -q` >/dev/null 2&>1 || true
+
+  @-just _docker system prune -f >/dev/null 2&>1 || true
+  @-just _docker volume prune -f >/dev/null 2&>1 || true
+  @-just _builder prune -f >/dev/null 2&>1 || true
+  @-just _network prune -f >/dev/null 2&>1 || true
+
+  @-just _builder history rm --all >/dev/null 2&>1 || true
+
 
   @echo "OK"
 
