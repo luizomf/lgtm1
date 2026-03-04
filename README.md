@@ -46,6 +46,14 @@ traces to Tempo.
 docker compose -f docker/compose.yaml up -d --build
 ```
 
+Or use the shortcuts:
+
+```bash
+just up
+just smoke
+just traffic-scenarios 20 0.1
+```
+
 ## Useful endpoints
 
 - API: [http://127.0.0.1:8000](http://127.0.0.1:8000)
@@ -67,3 +75,8 @@ docker compose -f docker/compose.yaml up -d --build
 - Password: `admin`
 
 Datasources for `Mimir`, `Loki`, and `Tempo` are provisioned automatically at startup.
+The `LGTM Demo Overview` dashboard is also provisioned automatically.
+
+## More docs
+
+- [o11y-quick-queries.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/o11y-quick-queries.md)

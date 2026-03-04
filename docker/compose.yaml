@@ -28,6 +28,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - ./grafana/provisioning/datasources/default.yaml:/etc/grafana/provisioning/datasources/default.yaml:ro
+      - ./grafana/provisioning/dashboards/default.yaml:/etc/grafana/provisioning/dashboards/default.yaml:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
 
   tempo:
     hostname: tempo
