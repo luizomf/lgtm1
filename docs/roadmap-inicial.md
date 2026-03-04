@@ -2,15 +2,18 @@
 
 ## Objetivo operacional
 
-Ter uma versao filmavel rapidamente, sem sacrificar a base estrutural do projeto.
+Ter uma versao filmavel rapidamente, sem sacrificar a base estrutural do
+projeto.
 
 ## Direcao recomendada
 
 Usar o que ja existe no repositorio como ponto de partida:
 
 - `docker/compose.yaml` ja tem esqueleto da stack LGTM com `Alloy`
-- `frontend/` ja existe e pode virar vitrine futura, mas nao precisa bloquear a V1
-- falta definir a aplicacao demo e amarrar a historia entre sinal gerado e leitura no Grafana
+- `frontend/` ja existe e pode virar vitrine futura, mas nao precisa bloquear a
+  V1
+- falta definir a aplicacao demo e amarrar a historia entre sinal gerado e
+  leitura no Grafana
 
 ## Recorte da V1
 
@@ -20,7 +23,8 @@ Usar o que ja existe no repositorio como ponto de partida:
 - Um unico VPS para deploy inicial
 - Candidato principal: `kvm8`
 
-Motivo: ja esta aberto em `80/443`, tem mais recursos e reduz friccao para chegar em algo filmavel no prazo.
+Motivo: ja esta aberto em `80/443`, tem mais recursos e reduz friccao para
+chegar em algo filmavel no prazo.
 
 ### Rede
 
@@ -28,11 +32,13 @@ Motivo: ja esta aberto em `80/443`, tem mais recursos e reduz friccao para chega
 - Eventual proxy publico para a API
 - Grafana preferencialmente exposto apenas na interface `wg0` do WireGuard
 
-Se o WireGuard consumir tempo demais na primeira passada, priorizamos a entrega filmavel e tratamos o isolamento como etapa imediatamente seguinte.
+Se o WireGuard consumir tempo demais na primeira passada, priorizamos a entrega
+filmavel e tratamos o isolamento como etapa imediatamente seguinte.
 
 ### Aplicacao demo
 
-Recomendacao: criar um app `FastAPI` simples em um diretorio proprio dentro do monorepo.
+Recomendacao: criar um app `FastAPI` simples em um diretorio proprio dentro do
+monorepo.
 
 Motivos:
 
@@ -52,7 +58,8 @@ Motivos:
 - Conectar o Grafana a `Loki`, `Tempo` e `Mimir`
 - Montar uma visualizacao minima que prove valor
 
-Saida esperada: um fluxo local em que voce provoca comportamento na API e consegue "enxergar" isso no Grafana.
+Saida esperada: um fluxo local em que voce provoca comportamento na API e
+consegue "enxergar" isso no Grafana.
 
 ### Fase 2: Cenarios de demonstracao
 
@@ -60,9 +67,11 @@ Implementar endpoints orientados a narrativa:
 
 - `/health` para sucesso previsivel
 - `/unstable` para erro e lentidao intermitentes
-- `/scenario` para forcar comportamento por parametro (`ok`, `warn`, `error`, `slow`)
+- `/scenario` para forcar comportamento por parametro (`ok`, `warn`, `error`,
+  `slow`)
 
-Saida esperada: capacidade de demonstrar no video, com pouco tempo de tela, por que observabilidade importa.
+Saida esperada: capacidade de demonstrar no video, com pouco tempo de tela, por
+que observabilidade importa.
 
 ### Fase 3: Deploy em VPS
 
@@ -72,7 +81,8 @@ Saida esperada: capacidade de demonstrar no video, com pouco tempo de tela, por 
 - Publicar a API
 - Restringir o Grafana ao acesso administrativo
 
-Saida esperada: ambiente online suficiente para sustentar a narrativa "agora isso esta no ar".
+Saida esperada: ambiente online suficiente para sustentar a narrativa "agora
+isso esta no ar".
 
 ### Fase 4: Polimento e documentacao
 
@@ -89,18 +99,23 @@ Saida esperada: base reaproveitavel e blindada contra interpretacoes erradas.
 2. Criar a API demo minima e os endpoints de demonstracao.
 3. Validar o fluxo no Grafana.
 4. Subir a mesma ideia no `kvm8`.
-5. Decidir se o WireGuard entra no rascunho de sexta ou fica para refinamento da semana seguinte.
+5. Decidir se o WireGuard entra no rascunho de sexta ou fica para refinamento da
+   semana seguinte.
 
 ## Decisoes tecnicas iniciais
 
-- Comecar simples e defensavel e melhor do que tentar alta sofisticacao antes da validacao
+- Comecar simples e defensavel e melhor do que tentar alta sofisticacao antes da
+  validacao
 - O projeto deve provar valor antes de otimizar seguranca e hardening
-- `Mimir` permanece no escopo inicial, mas podemos reduzir seu protagonismo se ele atrapalhar o prazo
-- O frontend nao precisa entrar na primeira demonstracao; a API observavel e suficiente para sustentar a tese
+- `Mimir` permanece no escopo inicial, mas podemos reduzir seu protagonismo se
+  ele atrapalhar o prazo
+- O frontend nao precisa entrar na primeira demonstracao; a API observavel e
+  suficiente para sustentar a tese
 
 ## Riscos de execucao
 
-- Falta de familiaridade com a stack pode travar se tentarmos aprender tudo ao mesmo tempo
+- Falta de familiaridade com a stack pode travar se tentarmos aprender tudo ao
+  mesmo tempo
 - Integracao de logs, metricas e traces pode falhar em detalhes de configuracao
 - Seguranca de rede pode expandir demais o escopo se entrar cedo demais
 
@@ -116,4 +131,5 @@ Se o prazo apertar, preservar nesta ordem:
 
 ## Proxima acao recomendada
 
-Fechar a definicao da API demo e, em seguida, implementar a primeira trilha completa: requisicao, sinal gerado, sinal coletado, leitura no Grafana.
+Fechar a definicao da API demo e, em seguida, implementar a primeira trilha
+completa: requisicao, sinal gerado, sinal coletado, leitura no Grafana.
