@@ -35,3 +35,14 @@ store_gateway:
 
 usage_stats:
   enabled: false
+
+ruler_storage:
+  backend: filesystem
+  filesystem:
+    dir: /data/mimir/rules
+
+ruler:
+  enable_api: true
+  rule_path: /data/mimir/ruler
+  # In monolithic mode, Mimir's own embedded Alertmanager is exposed on this path.
+  alertmanager_url: http://localhost:9009/alertmanager

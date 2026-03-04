@@ -10,6 +10,23 @@ distributor:
         http:
           endpoint: '0.0.0.0:4318'
 
+metrics_generator:
+  ring:
+    kvstore:
+      store: memberlist
+  processor:
+    local_blocks:
+      filter_server_spans: false
+  storage:
+    path: /var/tempo/generator/wal
+    remote_write:
+      - url: http://mimir:9009/api/v1/push
+        send_exemplars: true
+  traces_storage:
+    path: /var/tempo/generator/traces
+  traces_query_storage:
+    path: /var/tempo/generator/traces
+
 storage:
   trace:
     backend: local
@@ -17,6 +34,14 @@ storage:
       path: /var/tempo/blocks
     wal:
       path: /var/tempo/wal
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors:
+        - local-blocks
+        - span-metrics
+        - service-graphs
 
 usage_report:
   reporting_enabled: false
