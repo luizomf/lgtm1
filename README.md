@@ -1,1 +1,69 @@
-# WRITEME
+# LGTM Demo Stack
+
+This repository is a local-first observability base built around the LGTM stack:
+
+- `Loki` for logs
+- `Grafana` for visualization
+- `Tempo` for traces
+- `Mimir` for metrics
+- `Alloy` as the collector and router
+- `FastAPI` as the demo application that emits useful signals on purpose
+
+## Why this exists
+
+The goal is not just to "run Grafana". The goal is to have a small application that
+can behave like a real system under stress so we can explain why observability
+matters, not only how to install tools.
+
+## Signal flow
+
+### Logs
+
+The API writes logs to standard output. Docker exposes those logs, Alloy tails them
+from the Docker socket, and Alloy forwards them to Loki.
+
+`api -> stdout -> Docker -> Alloy -> Loki -> Grafana`
+
+### Metrics
+
+The API emits OpenTelemetry metrics and Alloy also scrapes container metrics through
+its cAdvisor exporter. Alloy forwards both streams to Mimir.
+
+`api -> OTLP -> Alloy -> Mimir -> Grafana`
+
+`containers -> cAdvisor -> Alloy -> Mimir -> Grafana`
+
+### Traces
+
+The API emits OpenTelemetry traces to Alloy through OTLP gRPC. Alloy forwards those
+traces to Tempo.
+
+`api -> OTLP -> Alloy -> Tempo -> Grafana`
+
+## Local startup
+
+```bash
+docker compose -f docker/compose.yaml up -d --build
+```
+
+## Useful endpoints
+
+- API: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+- Grafana: [http://127.0.0.1:3000](http://127.0.0.1:3000)
+- Alloy admin/metrics: [http://127.0.0.1:12345](http://127.0.0.1:12345)
+
+## Demo routes
+
+- `GET /health`
+- `GET /unstable`
+- `GET /scenario?mode=ok`
+- `GET /scenario?mode=warn`
+- `GET /scenario?mode=error`
+- `GET /scenario?mode=slow&delay_ms=1500`
+
+## Grafana login
+
+- User: `admin`
+- Password: `admin`
+
+Datasources for `Mimir`, `Loki`, and `Tempo` are provisioned automatically at startup.
