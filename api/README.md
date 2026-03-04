@@ -17,6 +17,15 @@ uv sync --all-groups
 uv run uvicorn api.main:app --reload
 ```
 
+## Docker
+
+```bash
+docker build -t lgtm-demo-api .
+docker run --rm -p 8000:8000 lgtm-demo-api
+```
+
+The root Compose stack also exposes this service on port `8000`.
+
 ## Tests
 
 ```bash
