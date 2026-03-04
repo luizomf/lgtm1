@@ -27,18 +27,18 @@ down *ARGS:
 # 🚨 DELETE ALL THINGS DOCKER
 [group('🚨 danger')]
 nukeall: down
-  @-just docker stop `docker ps -a -q` >/dev/null < 2&>1 || true
-  @-just docker rm `docker ps -a -q` >/dev/null < 2&>1 || true
+  @-just docker stop $(docker ps -a -q) > /dev/null 2>&1 || true
+  @-just docker rm $(docker ps -a -q) > /dev/null 2>&1 || true
 
-  @-just docker volume `docker volume ls -q` >/dev/null < 2&>1 || true
-  @-just docker network `docker network ls -q` >/dev/null < 2&>1 || true
+  @-just docker volume $(docker volume ls -q) > /dev/null 2>&1 || true
+  @-just docker network $(docker network ls -q) > /dev/null 2>&1 || true
 
-  @-just docker system prune -f >/dev/null < 2&>1 || true
-  @-just docker volume prune -f >/dev/null < 2&>1 || true
-  @-just docker builder prune -f >/dev/null < 2&>1 || true
-  @-just docker network prune -f >/dev/null < 2&>1 || true
+  @-just docker system prune -f > /dev/null 2>&1 || true
+  @-just docker volume prune -f > /dev/null 2>&1 || true
+  @-just docker builder prune -f > /dev/null 2>&1 || true
+  @-just docker network prune -f > /dev/null 2>&1 || true
 
-  @-just docker builder history rm --all > /dev/null < 2&>1 || true
+  @-just docker builder history rm --all > /dev/null 2>&1 || true
 
 
 # Run prettier or ruff to format files
