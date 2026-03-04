@@ -1,0 +1,19 @@
+// Descobre containers locais
+discovery.docker "local" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// Coleta logs dos containers
+loki.source.docker "default" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.docker.local.targets
+  labels     = {"job" = "docker"}
+  forward_to = [loki.write.default.receiver]
+}
+
+// Envia pro Loki
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
