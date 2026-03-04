@@ -41,3 +41,30 @@ nukeall: down
   @-just docker builder history rm --all > /dev/null < 2&>1 || true
 
 
+# Run prettier or ruff to format files
+[group('format')]
+format *ARGS:
+  just compose down
+
+# Run prettier to format files
+[group('format')]
+prettierfmt *ARGS:
+  prettier --write --config ./.prettierrc.json {{ ARGS }}
+
+# Run prettier to format files
+[group('format')]
+prettiercheck *ARGS:
+  prettier --check --config ./.prettierrc.json {{ ARGS }}
+
+# Run ruff to format python files
+[group('format')]
+rufffmt *ARGS:
+  ruff format {{ ARGS }}
+
+# Run ruff to format python files
+[group('format')]
+ruffcheck *ARGS:
+  ruff check {{ ARGS }}
+
+
+
