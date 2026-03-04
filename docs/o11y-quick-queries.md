@@ -85,6 +85,22 @@ just smoke
 just traffic 50 0.1
 just traffic-scenarios 20 0.1
 just o11ycheck
+just rules-load
+just rules-state
+```
+
+## Alerting check (Mimir ruler)
+
+The demo alert expression is:
+
+```promql
+100 * sum(rate(demo_api_requests_total{demo_scenario_status="error"}[5m])) / clamp_min(sum(rate(demo_api_requests_total[5m])), 0.0001) > 10
+```
+
+Generate traffic and verify alert state:
+
+```bash
+just alert-demo 30 0.1
 ```
 
 ## Talk track in one line
