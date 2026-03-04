@@ -52,6 +52,7 @@ Or use the shortcuts:
 just up
 just smoke
 just traffic-scenarios 20 0.1
+just alert-demo 30 0.1
 ```
 
 ## Useful endpoints
@@ -77,6 +78,23 @@ just traffic-scenarios 20 0.1
 Datasources for `Mimir`, `Loki`, and `Tempo` are provisioned automatically at startup.
 The `LGTM Demo Overview` dashboard is also provisioned automatically.
 
+## Demo alert rule
+
+Load and validate the demo alert rule stored in `docker/mimir-rules/demo-api.yaml`:
+
+```bash
+just rules-load
+just rules-list
+just rules-state
+```
+
+To force traffic and watch state transitions in Grafana Alerting:
+
+```bash
+just alert-demo 30 0.1
+```
+
 ## More docs
 
 - [o11y-quick-queries.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/o11y-quick-queries.md)
+- [grafana-click-paths.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/grafana-click-paths.md)

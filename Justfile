@@ -109,17 +109,39 @@ smoke:
 # Generate mixed request traffic for dashboards
 [group('demo')]
 traffic rounds="30" sleep_seconds="0.2":
-  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "http://127.0.0.1:8000/unstable" > /dev/null || true; sleep {{ sleep_seconds }}'
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "http://127.0.0.1:8000/unstable" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
 
 # Generate deterministic scenario traffic
 [group('demo')]
 traffic-scenarios rounds="10" sleep_seconds="0.2":
-  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "http://127.0.0.1:8000/scenario?mode=ok" > /dev/null || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=warn" > /dev/null || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=slow&delay_ms=600" > /dev/null || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=error" > /dev/null || true; sleep {{ sleep_seconds }}'
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "http://127.0.0.1:8000/scenario?mode=ok" > /dev/null 2>&1 || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=warn" > /dev/null 2>&1 || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=slow&delay_ms=600" > /dev/null 2>&1 || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=error" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
 
 # Verify collector ingestion counters from Alloy
 [group('o11y')]
 o11ycheck:
   curl -fsS http://127.0.0.1:12345/metrics | rg "otelcol_receiver_accepted_(metric_points|spans)_total|otelcol_exporter_sent_spans_total|otelcol_exporter_send_failed_spans_total"
+
+# Load demo alert rules into Mimir ruler storage
+[group('o11y')]
+rules-load namespace="demo" file="docker/mimir-rules/demo-api.yaml":
+  curl -fsS -X POST "http://127.0.0.1:9009/prometheus/config/v1/rules/{{ namespace }}" --data-binary "@{{ file }}"
+
+# Show configured Mimir rule groups
+[group('o11y')]
+rules-list:
+  curl -fsS http://127.0.0.1:9009/prometheus/config/v1/rules
+
+# Show evaluated rule state from Mimir ruler
+[group('o11y')]
+rules-state:
+  curl -fsS http://127.0.0.1:9009/prometheus/api/v1/rules
+
+# End-to-end alert demo: load rules and generate traffic that should fire alerts
+[group('o11y')]
+alert-demo rounds="30" sleep_seconds="0.2":
+  just rules-load
+  just traffic-scenarios {{ rounds }} {{ sleep_seconds }}
+  just rules-state
 
 # Show Grafana datasources to confirm provisioning
 [group('o11y')]
@@ -133,4 +155,3 @@ demo-ready:
   just smoke
   just traffic-scenarios 10 0.1
   just o11ycheck
-
