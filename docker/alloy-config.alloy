@@ -18,6 +18,44 @@ loki.write "default" {
   }
 }
 
+// Recebe traces e metricas OTLP das aplicacoes
+otelcol.receiver.otlp "default" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    metrics = [otelcol.processor.batch.default.input]
+    traces  = [otelcol.processor.batch.default.input]
+  }
+}
+
+otelcol.processor.batch "default" {
+  output {
+    metrics = [otelcol.exporter.prometheus.default.input]
+    traces  = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+otelcol.exporter.prometheus "default" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "tempo:4317"
+
+    tls {
+      insecure             = true
+      insecure_skip_verify = true
+    }
+  }
+}
+
 // Métricas dos containers (substitui cAdvisor)
 prometheus.exporter.cadvisor "containers" {
   docker_host = "unix:///var/run/docker.sock"
@@ -36,4 +74,3 @@ prometheus.remote_write "mimir" {
     url = "http://mimir:9009/api/v1/push"
   }
 }
-

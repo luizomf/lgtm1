@@ -8,10 +8,15 @@ import uvicorn
 from fastapi import FastAPI
 
 from api.application.scenario_service import ScenarioService
+from api.infrastructure.telemetry import setup_telemetry
 from api.presentation.http import router
 
 
-def create_app(service: ScenarioService | None = None) -> FastAPI:
+def create_app(
+  service: ScenarioService | None = None,
+  *,
+  enable_telemetry: bool = True,
+) -> FastAPI:
   """Create the FastAPI application with injectable collaborators."""
   _configure_logging()
 
@@ -21,13 +26,15 @@ def create_app(service: ScenarioService | None = None) -> FastAPI:
     version="0.1.0",
   )
   app.state.scenario_service = service if service is not None else ScenarioService()
+  if enable_telemetry:
+    setup_telemetry(app)
   app.include_router(router)
   return app
 
 
 def run() -> None:
   """Run the local development server."""
-  uvicorn.run("api.main:app", host="127.0.0.1", port=8000)
+  uvicorn.run("api.main:create_app", factory=True, host="127.0.0.1", port=8000)
 
 
 def _configure_logging() -> None:
@@ -40,6 +47,3 @@ def _configure_logging() -> None:
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
   )
-
-
-app = create_app()

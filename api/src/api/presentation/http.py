@@ -11,6 +11,11 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from api.domain.scenarios import ScenarioMode, ScenarioOutcome
+from api.infrastructure.telemetry import (
+  annotate_current_span,
+  current_trace_ids,
+  record_scenario,
+)
 
 if TYPE_CHECKING:
   from api.application.scenario_service import ScenarioService
@@ -118,6 +123,18 @@ async def _execute_scenario(
     detail=outcome.detail,
     delay_ms=outcome.delay_ms,
   )
+  annotate_current_span(
+    request.url.path,
+    payload.mode,
+    payload.status,
+    payload.delay_ms,
+  )
+  record_scenario(
+    request.url.path,
+    payload.mode,
+    payload.status,
+    payload.delay_ms,
+  )
   _log_outcome(request, outcome)
 
   if outcome.http_status >= _SERVER_ERROR_STATUS:
@@ -137,14 +154,20 @@ def _get_scenario_service(request: Request) -> ScenarioService:
 
 def _log_outcome(request: Request, outcome: ScenarioOutcome) -> None:
   """Produce readable structured-like logs for the observability stack."""
+  trace_id, span_id = current_trace_ids()
   logger.log(
     _log_level(outcome.severity),
-    ("scenario=%s endpoint=%s status=%s http_status=%s delay_ms=%s detail=%s"),
+    (
+      "scenario=%s endpoint=%s status=%s http_status=%s delay_ms=%s "
+      "trace_id=%s span_id=%s detail=%s"
+    ),
     outcome.mode.value,
     request.url.path,
     outcome.status,
     outcome.http_status,
     outcome.delay_ms,
+    trace_id or "-",
+    span_id or "-",
     outcome.detail,
   )
 

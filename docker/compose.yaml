@@ -1,4 +1,17 @@
 services:
+  api:
+    hostname: api
+    build:
+      context: ../api
+    depends_on:
+      - alloy
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4317
+      - OTEL_SERVICE_NAME=lgtm-demo-api
+    ports:
+      - 8000:8000
+    restart: unless-stopped
+
   loki:
     hostname: loki
     image: grafana/loki:3.6.7
@@ -13,14 +26,16 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./grafana/provisioning/datasources/default.yaml:/etc/grafana/provisioning/datasources/default.yaml:ro
+      - ./grafana/provisioning/dashboards/default.yaml:/etc/grafana/provisioning/dashboards/default.yaml:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
 
   tempo:
     hostname: tempo
     image: grafana/tempo:2.10.1
     ports:
       - 3200:3200
-      - 4317:4317
-      - 4318:4318
     command: ['-config.file=/etc/tempo/config.yaml']
     volumes:
       - ./tempo-config.yaml:/etc/tempo/config.yaml:ro
@@ -45,8 +60,8 @@ services:
       - /etc/alloy/config.alloy
     ports:
       - 12345:12345
-      # - 4317:4317
-      # - 4318:4318
+      - 4317:4317
+      - 4318:4318
     volumes:
       - ./alloy-config.alloy:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro

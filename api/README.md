@@ -14,8 +14,27 @@ Small FastAPI service used to generate realistic application behavior for the LG
 
 ```bash
 uv sync --all-groups
-uv run uvicorn api.main:app --reload
+uv run uvicorn api.main:create_app --factory --reload
 ```
+
+## Docker
+
+```bash
+docker build -t lgtm-demo-api .
+docker run --rm -p 8000:8000 lgtm-demo-api
+```
+
+The root Compose stack also exposes this service on port `8000`.
+
+## Telemetry
+
+This service exports traces and metrics through OTLP gRPC.
+
+- Default local collector endpoint: `http://127.0.0.1:4317`
+- Compose collector endpoint: `http://alloy:4317`
+- Service name: `lgtm-demo-api`
+
+Logs stay on standard output so Docker and Alloy can ship them to Loki.
 
 ## Tests
 

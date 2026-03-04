@@ -23,7 +23,9 @@ class FixedScenarioService(ScenarioService):
 
 
 def test_index_exposes_useful_routes() -> None:
-  client = TestClient(create_app(ScenarioService(default_delay_ms=1)))
+  client = TestClient(
+    create_app(ScenarioService(default_delay_ms=1), enable_telemetry=False),
+  )
 
   response = client.get("/")
 
@@ -32,7 +34,9 @@ def test_index_exposes_useful_routes() -> None:
 
 
 def test_health_reports_service_status() -> None:
-  client = TestClient(create_app(ScenarioService(default_delay_ms=1)))
+  client = TestClient(
+    create_app(ScenarioService(default_delay_ms=1), enable_telemetry=False),
+  )
 
   response = client.get("/health")
 
@@ -41,7 +45,9 @@ def test_health_reports_service_status() -> None:
 
 
 def test_scenario_ok_returns_happy_path_payload() -> None:
-  client = TestClient(create_app(ScenarioService(default_delay_ms=1)))
+  client = TestClient(
+    create_app(ScenarioService(default_delay_ms=1), enable_telemetry=False),
+  )
 
   response = client.get("/scenario", params={"mode": "ok"})
 
@@ -55,7 +61,9 @@ def test_scenario_ok_returns_happy_path_payload() -> None:
 
 
 def test_scenario_error_returns_service_unavailable() -> None:
-  client = TestClient(create_app(ScenarioService(default_delay_ms=1)))
+  client = TestClient(
+    create_app(ScenarioService(default_delay_ms=1), enable_telemetry=False),
+  )
 
   response = client.get("/scenario", params={"mode": "error"})
 
@@ -70,7 +78,9 @@ def test_scenario_error_returns_service_unavailable() -> None:
 
 
 def test_scenario_slow_accepts_custom_delay() -> None:
-  client = TestClient(create_app(ScenarioService(default_delay_ms=1)))
+  client = TestClient(
+    create_app(ScenarioService(default_delay_ms=1), enable_telemetry=False),
+  )
 
   response = client.get("/scenario", params={"mode": "slow", "delay_ms": 5})
 
@@ -84,7 +94,9 @@ def test_scenario_slow_accepts_custom_delay() -> None:
 
 
 def test_unstable_uses_injected_scenario_selection() -> None:
-  client = TestClient(create_app(FixedScenarioService(ScenarioMode.WARN)))
+  client = TestClient(
+    create_app(FixedScenarioService(ScenarioMode.WARN), enable_telemetry=False),
+  )
 
   response = client.get("/unstable")
 
