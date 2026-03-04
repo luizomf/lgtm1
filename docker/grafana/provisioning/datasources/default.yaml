@@ -9,6 +9,8 @@ datasources:
     isDefault: true
     jsonData:
       httpMethod: POST
+      prometheusType: Mimir
+      manageAlerts: true
 
   - name: Loki
     uid: loki
