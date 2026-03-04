@@ -113,3 +113,9 @@ Ate sexta-feira, 06/03/2026, o video precisa ter:
 - demonstracao minima convincente
 - transicao natural para a publi
 - linguagem segura o bastante para aprovar internamente
+
+## Guia de gravacao (study mode)
+
+Para roteiro de 15 minutos com storytelling, humor leve e transicoes prontas:
+
+- [video-story-study-mode.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/video-story-study-mode.md)
