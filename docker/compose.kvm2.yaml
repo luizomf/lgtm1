@@ -8,12 +8,19 @@ services:
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=docker_default
       - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --certificatesresolvers.le.acme.email=luizomf@gmail.com
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
       - --log.level=INFO
       - --accesslog=true
     ports:
       - 0.0.0.0:80:80
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
     restart: unless-stopped
 
   api:
@@ -29,9 +36,15 @@ services:
       - 0.0.0.0:8000:8000
     labels:
       - traefik.enable=true
+      - traefik.http.routers.api.rule=Host(`lgtm.inprod.cloud`)
       - traefik.http.routers.api.rule=PathPrefix(`/`)
-      - traefik.http.routers.api.entrypoints=web
+      - traefik.http.routers.api.entrypoints=websecure
+      - traefik.http.routers.api.tls=true
+      - traefik.http.routers.api.tls.certresolver=le
+      - traefik.http.routers.api.priority=100
+      - traefik.http.routers.api.middlewares=strip-server-header
       - traefik.http.services.api.loadbalancer.server.port=8000
+
     restart: unless-stopped
 
   loki:
@@ -93,3 +106,4 @@ volumes:
   loki-data:
   mimir-data:
   tempo-data:
+  traefik_letsencrypt:
