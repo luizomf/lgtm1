@@ -1,16 +1,22 @@
 set shell := ["bash", "-cu"]
+
 set dotenv-load := true
 
 compose_file := "docker/compose.yaml"
+compose_prod_file := "docker/compose.kvm2.yaml"
 env_file := ".env"
 
 grafana_domain := 'lgtm.inprod.cloud'
 api_domain := 'api.inprod.cloud'
 
+GRAFANA_USER := env('GRAFANA_USER', '')
+GRAFANA_PASSWD := env('GRAFANA_PASSWD', '')
+
 # List all just recipes
 [group('just')]
 @list:
   just -l
+  echo $OLLAMA_KEEP_ALIVE
 
 # Alias to `docker ...`
 [group('docker')]
@@ -70,13 +76,13 @@ rufffmt *ARGS:
 ruffcheck *ARGS:
   ruff check {{ ARGS }}
 
-# Terminal TTS
+# 🔉 Terminal TTS: uses Kokoro to speak in terminal (English only)
 [group('misc')]
 say *ARGS:
   #!/bin/bash
   echo "{{ ARGS }}" | ~/Desktop/tutoriais_e_cursos/loudterm/.venv/bin/python ~/Desktop/tutoriais_e_cursos/loudterm/src/loudterm/backend/kokoro82m/cliplay.py -i -
 
-# Start the full LGTM stack with the demo API
+# Dev: Start the full LGTM stack with the demo API
 [group('stack')]
 up *ARGS:
   just compose up -d --build {{ ARGS }}
@@ -119,16 +125,6 @@ traffic rounds="30" sleep_seconds="0.2":
 traffic-scenarios rounds="10" sleep_seconds="0.2":
   seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "http://127.0.0.1:8000/scenario?mode=ok" > /dev/null 2>&1 || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=warn" > /dev/null 2>&1 || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=slow&delay_ms=600" > /dev/null 2>&1 || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=error" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
 
-# Generate mixed request traffic for dashboards
-[group('demo')]
-traffic-kvm2 rounds="30" sleep_seconds="0.2":
-  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "https://{{ api_domain }}/unstable" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
-
-# Generate deterministic scenario traffic
-[group('demo')]
-traffic-scenarios-kvm2 rounds="10" sleep_seconds="0.2":
-  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "http://{{ api_domain }}/scenario?mode=ok" > /dev/null 2>&1 || true; curl -fsS "http://{{ api_domain }}/scenario?mode=warn" > /dev/null 2>&1 || true; curl -fsS "http://{{ api_domain }}/scenario?mode=slow&delay_ms=600" > /dev/null 2>&1 || true; curl -fsS "http://{{ api_domain }}/scenario?mode=error" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
-
 # Verify collector ingestion counters from Alloy
 [group('o11y')]
 o11ycheck:
@@ -159,7 +155,7 @@ alert-demo rounds="30" sleep_seconds="0.2":
 # Show Grafana datasources to confirm provisioning
 [group('o11y')]
 datasources:
-  curl -fsS -u admin:admin http://127.0.0.1:3000/api/datasources
+  curl -fsS -u $GRAFANA_USER:$GRAFANA_PASSWD http://127.0.0.1:3000/api/datasources
 
 # End-to-end local workflow for quick validation
 [group('o11y')]
@@ -168,3 +164,29 @@ demo-ready:
   just smoke
   just traffic-scenarios 10 0.1
   just o11ycheck
+
+
+################################################################################
+# PRODUCTION RECIPES
+################################################################################
+
+# Prod: Alias to `docker compose ...`
+[group('prod')]
+compose-prod *ARGS:
+  just docker compose -f {{ compose_prod_file }} --env-file {{ env_file }} {{ ARGS }}
+
+# Prod: Start the full LGTM stack with the demo API
+[group('prod')]
+deploy *ARGS:
+  just compose-prod up -d --build {{ ARGS }}
+
+# Generate mixed request traffic for dashboards
+[group('prod')]
+traffic-prod rounds="30" sleep_seconds="0.2":
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "https://{{ api_domain }}/unstable" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
+
+# Generate deterministic scenario traffic
+[group('prod')]
+traffic-scenarios-prod rounds="10" sleep_seconds="0.2":
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "http://{{ api_domain }}/scenario?mode=ok" > /dev/null 2>&1 || true; curl -fsS "http://{{ api_domain }}/scenario?mode=warn" > /dev/null 2>&1 || true; curl -fsS "http://{{ api_domain }}/scenario?mode=slow&delay_ms=600" > /dev/null 2>&1 || true; curl -fsS "http://{{ api_domain }}/scenario?mode=error" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
+

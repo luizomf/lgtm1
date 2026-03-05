@@ -24,8 +24,8 @@ services:
     ports:
       - 3000:3000
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWD}
     volumes:
       - ./grafana/provisioning/datasources/default.yaml:/etc/grafana/provisioning/datasources/default.yaml:ro
       - ./grafana/provisioning/dashboards/default.yaml:/etc/grafana/provisioning/dashboards/default.yaml:ro
