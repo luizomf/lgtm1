@@ -6,7 +6,6 @@ services:
     command:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
-      - --providers.docker.network=docker_default
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
@@ -18,6 +17,7 @@ services:
       - --accesslog=true
     ports:
       - 0.0.0.0:80:80
+      - 0.0.0.0:443:443
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik_letsencrypt:/letsencrypt
@@ -36,13 +36,11 @@ services:
       - 0.0.0.0:8000:8000
     labels:
       - traefik.enable=true
-      - traefik.http.routers.api.rule=Host(`lgtm.inprod.cloud`)
-      - traefik.http.routers.api.rule=PathPrefix(`/`)
+      - traefik.http.routers.api.rule=Host(`api.inprod.cloud`)
       - traefik.http.routers.api.entrypoints=websecure
       - traefik.http.routers.api.tls=true
       - traefik.http.routers.api.tls.certresolver=le
       - traefik.http.routers.api.priority=100
-      - traefik.http.routers.api.middlewares=strip-server-header
       - traefik.http.services.api.loadbalancer.server.port=8000
 
     restart: unless-stopped
@@ -68,6 +66,14 @@ services:
       - ./grafana/provisioning/datasources/default.yaml:/etc/grafana/provisioning/datasources/default.yaml:ro
       - ./grafana/provisioning/dashboards/default.yaml:/etc/grafana/provisioning/dashboards/default.yaml:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.lgtm.rule=Host(`lgtm.inprod.cloud`)
+      - traefik.http.routers.lgtm.entrypoints=websecure
+      - traefik.http.routers.lgtm.tls=true
+      - traefik.http.routers.lgtm.tls.certresolver=le
+      - traefik.http.routers.lgtm.priority=100
+      - traefik.http.services.lgtm.loadbalancer.server.port=3000
 
   tempo:
     hostname: tempo
