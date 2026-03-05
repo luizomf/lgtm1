@@ -121,13 +121,13 @@ Expected:
 From another VPS:
 
 ```bash
-for p in 22 80 111 443 3000 3100 3200 8000 9009; do nc -zvw2 <kvm2_public_ip> "$p"; done
+for p in 22 80 111 443 3000 3100 3200 8000 9009 9100; do nc -zvw2 <kvm2_public_ip> "$p"; done
 ```
 
 Expected:
 
 - open: `80`, `443`
-- closed/filtered: `22` (if source not allowlisted), `111`, `3000`, `3100`, `3200`, `8000`, `9009`
+- closed/filtered: `22` (if source not allowlisted), `111`, `3000`, `3100`, `3200`, `8000`, `9009`, `9100`
 
 ## Talk track (short)
 

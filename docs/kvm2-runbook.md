@@ -8,7 +8,7 @@ consistent with the sponsored VPS shown in video.
 - Public Traefik: `0.0.0.0:80`
 - Public HTTPS ingress: `0.0.0.0:443`
 - Private Grafana: `10.100.0.2:3000` (WireGuard `wg0` only)
-- Internal-only services: Loki, Tempo, Mimir, Alloy (no public port publishing)
+- Internal-only services: Loki, Tempo, Mimir, Alloy, node_exporter (no public port publishing)
 
 ## Compose profile
 

@@ -68,6 +68,19 @@ prometheus.scrape "cadvisor" {
   forward_to      = [prometheus.remote_write.mimir.receiver]
 }
 
+// Métricas do host (CPU, memória, disco, rede)
+prometheus.scrape "node_exporter" {
+  targets = [
+    {
+      __address__ = "node-exporter:9100",
+      instance    = "vps",
+      job         = "node-exporter",
+    },
+  ]
+  scrape_interval = "15s"
+  forward_to      = [prometheus.remote_write.mimir.receiver]
+}
+
 // Envia métricas pro Mimir
 prometheus.remote_write "mimir" {
   endpoint {

@@ -26,12 +26,14 @@ from the Docker socket, and Alloy forwards them to Loki.
 
 ### Metrics
 
-The API emits OpenTelemetry metrics and Alloy also scrapes container metrics through
-its cAdvisor exporter. Alloy forwards both streams to Mimir.
+The API emits OpenTelemetry metrics and Alloy also scrapes container + host metrics
+through cAdvisor and node_exporter. Alloy forwards all streams to Mimir.
 
 `api -> OTLP -> Alloy -> Mimir -> Grafana`
 
 `containers -> cAdvisor -> Alloy -> Mimir -> Grafana`
+
+`host (CPU/RAM/Disk/Network) -> node_exporter -> Alloy -> Mimir -> Grafana`
 
 ### Traces
 
@@ -76,7 +78,7 @@ just alert-demo 30 0.1
 - Password: `admin`
 
 Datasources for `Mimir`, `Loki`, and `Tempo` are provisioned automatically at startup.
-The `LGTM Demo Overview` and `LGTM Flight Deck` dashboards are also provisioned automatically.
+The `LGTM Demo Overview`, `LGTM Flight Deck`, and `VPS Health` dashboards are also provisioned automatically.
 
 ## Demo alert rule
 
@@ -102,6 +104,7 @@ just alert-demo 30 0.1
 | Traefik HTTPS | `0.0.0.0:443` | Public | Public ingress for API |
 | API app port | `8000` | Internal only | Accessed through Traefik service routing |
 | Grafana UI | `10.100.0.2:3000` | Private (WireGuard + allowlist) | Admin surface, not public |
+| Node exporter | `9100` | Internal only | Host metrics scraped by Alloy only |
 | Loki | `3100` | Internal only | Backend component |
 | Tempo | `3200` (service internal) | Internal only | Backend component |
 | Mimir | `9009` (service internal) | Internal only | Backend component |

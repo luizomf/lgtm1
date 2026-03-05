@@ -28,6 +28,30 @@ histogram_quantile(0.95, sum(rate(demo_api_response_delay_ms_milliseconds_bucket
 sum(increase(demo_api_requests_total[30m])) by (demo_scenario_mode)
 ```
 
+### Host CPU used (%)
+
+```promql
+100 * (1 - avg(rate(node_cpu_seconds_total{job="node-exporter", mode="idle"}[5m])))
+```
+
+### Host memory used (%)
+
+```promql
+100 * (1 - (node_memory_MemAvailable_bytes{job="node-exporter"} / node_memory_MemTotal_bytes{job="node-exporter"}))
+```
+
+### Host disk used (%)
+
+```promql
+100 * (1 - (sum(node_filesystem_avail_bytes{job="node-exporter", fstype!~"tmpfs|overlay|squashfs|ramfs"}) / sum(node_filesystem_size_bytes{job="node-exporter", fstype!~"tmpfs|overlay|squashfs|ramfs"})))
+```
+
+### Host network throughput (B/s)
+
+```promql
+sum(rate(node_network_receive_bytes_total{job="node-exporter", device!~"lo|docker.*|veth.*|br-.*"}[5m])) + sum(rate(node_network_transmit_bytes_total{job="node-exporter", device!~"lo|docker.*|veth.*|br-.*"}[5m]))
+```
+
 ## LogQL (Loki)
 
 ### Scenario logs only
