@@ -76,7 +76,7 @@ just alert-demo 30 0.1
 - Password: `admin`
 
 Datasources for `Mimir`, `Loki`, and `Tempo` are provisioned automatically at startup.
-The `LGTM Demo Overview` dashboard is also provisioned automatically.
+The `LGTM Demo Overview` and `LGTM Flight Deck` dashboards are also provisioned automatically.
 
 ## Demo alert rule
 
