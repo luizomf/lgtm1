@@ -11,8 +11,11 @@ sudo ufw status verbose
 Expected:
 
 - `Status: active`
-- only required inbound ports (`22`, `80`, `443`, `51820`)
+- only required inbound ports (`80`, `443`, `22`, `51820`)
 - default inbound policy as `deny`
+- `80/443` open to `Anywhere`
+- `22` only from admin source(s) or VPN
+- `51820/udp` only from known WireGuard peers
 
 ## 2) Fail2ban health
 
@@ -50,7 +53,7 @@ Expected for this project profile:
 
 - `:80` and `:443` exposed by Traefik
 - `:3000` bound to WireGuard IP (`10.100.0.2:3000`)
-- `:8000` exposed only if direct API fallback is intentional
+- no `:8000` public bind
 
 ## 5) Docker published ports sanity
 
@@ -88,7 +91,20 @@ Expected:
 - HTTP -> HTTPS redirect
 - HTTPS responses with expected status codes
 
-## 8) WireGuard tunnel status
+## 8) Grafana network restriction
+
+From a non-admin source:
+
+```bash
+curl -I https://lgtm.inprod.cloud/login
+```
+
+Expected:
+
+- `403` outside allowlist
+- `200/302` from VPN/admin network
+
+## 9) WireGuard tunnel status
 
 ```bash
 sudo systemctl is-active wg-quick@wg0
@@ -100,9 +116,18 @@ Expected:
 - interface active
 - recent handshake with expected peers
 
-## 9) Optional strict mode decision
+## 10) External port probe (recommended)
 
-If you want to enforce API only behind Traefik/TLS, remove direct `:8000` public mapping from `compose.kvm2.yaml`.
+From another VPS:
+
+```bash
+for p in 22 80 111 443 3000 3100 3200 8000 9009; do nc -zvw2 <kvm2_public_ip> "$p"; done
+```
+
+Expected:
+
+- open: `80`, `443`
+- closed/filtered: `22` (if source not allowlisted), `111`, `3000`, `3100`, `3200`, `8000`, `9009`
 
 ## Talk track (short)
 
