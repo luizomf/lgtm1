@@ -1,0 +1,73 @@
+services:
+  api:
+    hostname: api
+    build:
+      context: ../api
+    depends_on:
+      - alloy
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4317
+      - OTEL_SERVICE_NAME=lgtm-demo-api
+    ports:
+      - 0.0.0.0:8000:8000
+    restart: unless-stopped
+
+  loki:
+    hostname: loki
+    image: grafana/loki:3.6.7
+    restart: unless-stopped
+    volumes:
+      - loki-data:/loki
+
+  grafana:
+    hostname: grafana
+    image: grafana/grafana:12.4.0
+    ports:
+      - 10.100.0.2:3000:3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    restart: unless-stopped
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning/datasources/default.yaml:/etc/grafana/provisioning/datasources/default.yaml:ro
+      - ./grafana/provisioning/dashboards/default.yaml:/etc/grafana/provisioning/dashboards/default.yaml:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+  tempo:
+    hostname: tempo
+    image: grafana/tempo:2.10.1
+    command: ['-config.file=/etc/tempo/config.yaml']
+    restart: unless-stopped
+    volumes:
+      - tempo-data:/var/tempo
+      - ./tempo-config.yaml:/etc/tempo/config.yaml:ro
+
+  mimir:
+    container_name: mimir
+    hostname: mimir
+    image: grafana/mimir:2.17.7
+    command: ['-config.file=/etc/mimir/config.yaml', '-target=all']
+    restart: unless-stopped
+    volumes:
+      - mimir-data:/data/mimir
+      - ./mimir-config.yaml:/etc/mimir/config.yaml:ro
+
+  alloy:
+    container_name: alloy
+    hostname: alloy
+    image: grafana/alloy:v1.12.0
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - /etc/alloy/config.alloy
+    restart: unless-stopped
+    volumes:
+      - ./alloy-config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  grafana-data:
+  loki-data:
+  mimir-data:
+  tempo-data:
