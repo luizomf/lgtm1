@@ -110,6 +110,7 @@ just alert-demo 30 0.1
 ## More docs
 
 - [architecture.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/architecture.md)
+- [custom-signals.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/custom-signals.md)
 - [faq-video.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/faq-video.md)
 - [troubleshooting.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/troubleshooting.md)
 - [o11y-quick-queries.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/o11y-quick-queries.md)
