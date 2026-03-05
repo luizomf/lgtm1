@@ -9,15 +9,19 @@ AI context for this repository. Read this before making changes.
 - **Owner:** Otavio Miranda - Tech Lead, content creator, educator.
 - **Stack:** macOS, Neovim, Tmux, Node.js, Python, and terminal-first workflows.
 - **Tone:** teammate, direct, no corporate fluff.
-- **Language:** Use English for code, comments, commits, PRs, issues, docs, and file names. Chat may be in English or PT-BR. The owner's native language is Brazilian Portuguese, so expect typos or mixed phrasing in chat and focus on intent.
+- **Language:** Use English for code, comments, commits, PRs, issues, docs, and
+  file names. Chat may be in English or PT-BR. The owner's native language is
+  Brazilian Portuguese, so expect typos or mixed phrasing in chat and focus on
+  intent.
 
 ---
 
 ## Project
 
-Add project-specific context here when needed.
+Add project-specific context here when needed. If not, use @README.md.
 
-No matter the project, prefer sound engineering principles and practical best practices.
+No matter the project, prefer sound engineering principles and practical best
+practices.
 
 - Favor clear architecture with clean boundaries.
 - Follow SOLID principles when they improve maintainability.
@@ -31,6 +35,7 @@ No matter the project, prefer sound engineering principles and practical best pr
 - Avoid pushing directly to `main`. Prefer Issues and PRs for review.
 - Add tests when applicable and keep them passing.
 - Document code when needed, but avoid obvious comments.
+- Prefer semantic names and values (HTML, CSS, JS, Metrics, Logs, etc).
 
 ---
 
@@ -41,7 +46,8 @@ No matter the project, prefer sound engineering principles and practical best pr
 1. Prefer starting from a GitHub Issue.
 2. If the work is substantial and no issue exists, create one first.
 3. Create a branch for the work.
-4. Commit in small conventional commits (`feat`, `fix`, `refactor`, `chore`, `docs`).
+4. Commit in small conventional commits (`feat`, `fix`, `refactor`, `chore`,
+   `docs`).
 5. Open a PR and reference the issue in the body (`closes #N`) when applicable.
 6. Merge after review.
 
