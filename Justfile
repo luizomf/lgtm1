@@ -4,6 +4,9 @@ set dotenv-load := true
 compose_file := "docker/compose.yaml"
 env_file := ".env"
 
+grafana_domain := 'lgtm.inprod.cloud'
+api_domain := 'api.inprod.cloud'
+
 # List all just recipes
 [group('just')]
 @list:
@@ -115,6 +118,16 @@ traffic rounds="30" sleep_seconds="0.2":
 [group('demo')]
 traffic-scenarios rounds="10" sleep_seconds="0.2":
   seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "http://127.0.0.1:8000/scenario?mode=ok" > /dev/null 2>&1 || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=warn" > /dev/null 2>&1 || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=slow&delay_ms=600" > /dev/null 2>&1 || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=error" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
+
+# Generate mixed request traffic for dashboards
+[group('demo')]
+traffic-kvm2 rounds="30" sleep_seconds="0.2":
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "https://{{ api_domain }}/unstable" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
+
+# Generate deterministic scenario traffic
+[group('demo')]
+traffic-scenarios-kvm2 rounds="10" sleep_seconds="0.2":
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "http://{{ api_domain }}/scenario?mode=ok" > /dev/null 2>&1 || true; curl -fsS "http://{{ api_domain }}/scenario?mode=warn" > /dev/null 2>&1 || true; curl -fsS "http://{{ api_domain }}/scenario?mode=slow&delay_ms=600" > /dev/null 2>&1 || true; curl -fsS "http://{{ api_domain }}/scenario?mode=error" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
 
 # Verify collector ingestion counters from Alloy
 [group('o11y')]
