@@ -98,3 +98,4 @@ just alert-demo 30 0.1
 
 - [o11y-quick-queries.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/o11y-quick-queries.md)
 - [grafana-click-paths.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/grafana-click-paths.md)
+- [kvm2-runbook.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/kvm2-runbook.md)
