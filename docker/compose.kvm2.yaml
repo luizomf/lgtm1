@@ -49,6 +49,11 @@ services:
     restart: unless-stopped
     volumes:
       - loki-data:/loki
+      - ./loki-config.yaml:/etc/loki/config.yaml:ro
+    command: ['-config.file=/etc/loki/config.yaml']
+
+ruler:
+  alertmanager_url: http://localhost:9093
 
   grafana:
     hostname: grafana

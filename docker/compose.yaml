@@ -17,6 +17,9 @@ services:
     image: grafana/loki:3.6.7
     ports:
       - 3100:3100
+    volumes:
+      - ./loki-config.yaml:/etc/loki/config.yaml:ro
+    command: ['-config.file=/etc/loki/config.yaml']
 
   grafana:
     hostname: grafana
