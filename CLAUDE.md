@@ -33,7 +33,8 @@ Prefer sound engineering principles and practical best practices.
 - Write code that humans can reason about easily.
 - Keep directories and files organized with clear names.
 - Use consistent naming conventions.
-- Use semantic names and values when applicable (HTML, CSS, Metrics, Logs, etc).
+- Use semantic names and values when applicable (HTML, CSS, Traces, Metrics,
+  Logs, Exceptions, etc).
 - Prefer pure functions and methods when practical.
 - Build small, testable components with a single responsibility.
 - Prefer dependency inversion over concrete coupling.
