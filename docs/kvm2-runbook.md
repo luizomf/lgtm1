@@ -50,3 +50,9 @@ mimir_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{
 curl -fsS -X POST "http://$mimir_ip:9009/prometheus/config/v1/rules/demo" \
   --data-binary @/opt/lgtm1/docker/mimir-rules/demo-api.yaml
 ```
+
+## Security verification
+
+Use the dedicated checklist:
+
+- [security-checklist-kvm2.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/security-checklist-kvm2.md)
