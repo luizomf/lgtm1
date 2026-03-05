@@ -3,14 +3,14 @@
 > (SEO para o vídeo) Finalmente decidi estudar observabilidade mais a fundo.
 >
 > Neste vídeo, vou te mostrar como estou usando a stack LGTM (Loki, Grafana,
-> Tempo e Mimir) em estudos reais, inclusive em servidor real. Também vou deixar
+> Tempo e Mimir) para estudo real, inclusive em servidor real. Também vou deixar
 > todas as configurações e explicações para você não começar no escuro.
 
 ---
 
-Se você trabalha com aplicação real, provavelmente já viveu isso: dá erro, você
-corre para os logs, tenta entender no susto, corrige na correria e torce para
-não acontecer de novo.
+Se você trabalha com aplicações reais, provavelmente já viveu isso: dá erro,
+você corre para os logs, tenta entender no susto, corrige na correria e torce
+para não acontecer de novo. Independente do dia ou do horário.
 
 Normal. Eu também fiz isso por muito tempo.
 
@@ -18,41 +18,85 @@ O problema é que isso custa caro: estresse, tempo e paz. Pode te arrancar da
 cama de madrugada, interromper férias, ou destruir teu foco no meio de qualquer
 momento importante.
 
-Depois de anos futricando logs com `grep`, `ps`, `tail` e afins, eu decidi
-estudar observabilidade de verdade.
+Depois de anos futricando logs com `grep`, `ps`, `tail` e afins, decidi estudar
+observabilidade de verdade.
 
-Quero sair do modo “reagir ao erro” e ir para o modo “entender o sistema antes
+Preciso sair do modo “reagir ao erro” e ir para o modo “entender o sistema antes
 da falha escalar”.
 
-Observabilidade não resolve 100% dos problemas, mas me dá visão antecipada do
-sistema. E com essa visão, eu consigo melhorar continuamente métricas, alertas e
-decisões técnicas.
+Observabilidade, por si só, não deve resolver 100% dos problemas. Ainda terei
+sustos. Mas, tenho certeza que terei uma visão antecipada do sistema.
 
-## 2. O que vou usar (1 min): “LGTM como base”
+Com essa visão, consigo melhorar continuamente métricas, alertas e decisões
+técnicas.
 
-Depois de pesquisar bastante, eu decidi focar na stack LGTM, porque ela é
-objetiva e escalável. Funciona para estudo, funciona para projeto pequeno, e tem
-caminho para crescer depois.
+## 2. O que vou usar? (1 min): “LGTM Stack como base!”
 
-LGTM aqui significa: Loki, Grafana, Tempo e Mimir.
+Existem muitas opções para observabilidade. Depois de pesquisar bastante, decidi
+focar na LGTM Stack.
 
-## 3. O que é cada peça (2 min): “Loki, Grafana, Tempo, Mimir”
+Observei comunidade, documentação e potencial de escala. Na minha visão, ela
+funciona muito bem para estudo, funciona para projetos pequenos e também pode
+evoluir para cenários maiores com ajustes no futuro.
 
-Loki é onde ficam os logs. Grafana é a interface que junta tudo e permite
-explorar os dados. Tempo é para traces, que mostram o caminho de uma requisição.
-Mimir é para métricas, que mostram comportamento ao longo do tempo.
+A LGTM Stack tem quatro peças principais, cada uma com uma responsabilidade
+clara:
 
-Então não é ferramenta aleatória: é cada peça cumprindo um papel específico.
+- Loki
+- Grafana
+- Tempo
+- Mimir
+
+## 3. O que é cada peça? (2 min): “Loki, Grafana, Tempo e Mimir”
+
+Loki é onde ficam os logs. Grafana é a interface que centraliza visualização,
+exploração e alertas. Tempo é o backend de traces, que mostra o caminho de uma
+requisição. Mimir é o backend de métricas, que mostra comportamento ao longo do
+tempo.
+
+Essas peças separadas formam os três pilares da observabilidade: logs, traces e
+métricas.
+
+E é justamente essa separação que torna o diagnóstico mais rápido e mais
+confiável. Explico...
 
 ## 4. Por que tantas coisas? (2 min): “log sozinho não fecha diagnóstico”
 
-Log responde “o que aconteceu”. Métrica responde “com que frequência e qual
-tendência”. Trace responde “onde a requisição ficou lenta ou quebrou”.
+Se você já fez debug em produção, sabe que log responde muito bem o “o que
+aconteceu”.
 
-Quando você junta os três, você para de adivinhar.
+Mas aí vêm perguntas que log sozinho não responde tão bem:
 
-E entra um ponto importante: alertas. Você define regra para ser avisado antes
-de virar caos.
+- Quantas vezes isso aconteceu na semana?
+- Qual foi a tendência ao longo do tempo?
+- Em qual etapa da requisição o problema começou?
+
+E aqui começa a dor real.
+
+Tem gente que diz que “log resolve tudo”. Eu responderia com o menor violino do
+mundo... ou melhor, o menor cluster do mundo.
+
+Eu só estou estudando isso mais a fundo agora porque, nas últimas semanas, sofri
+bastante tentando buscar log na mão em cluster pequeno, com 3 nodes.
+
+Agora imagina isso em ambientes com 12, 24, 48+ nodes. Não existe mundo real
+onde você vai fazer `tail -f` em tudo e chamar isso de estratégia.
+
+Com observabilidade, entram as métricas (Mimir/Prometheus): elas mostram
+frequência e tendência. Exemplo: “todo dia, das 20h às 00h, o tráfego do
+carrinho sobe 50%”.
+
+Aí você cruza com negócio: “as vendas também subiram 50% ou só o erro
+aumentou?”. Esse tipo de pergunta muda decisão técnica e decisão de produto.
+
+Além de logs e métricas, temos traces (Tempo): o caminho da requisição ponta a
+ponta. Você consegue ver onde ficou lento, onde falhou e qual serviço/etapa
+puxou tudo para baixo.
+
+Quando junta os três, você para de chutar e começa a diagnosticar com contexto.
+
+E fecha com alertas: em vez de descobrir pelo cliente reclamando, você é avisado
+antes.
 
 ## 5. Como conecta tudo (1-2 min): “OpenTelemetry + Alloy”
 
