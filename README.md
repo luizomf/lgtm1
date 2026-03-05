@@ -94,9 +94,24 @@ To force traffic and watch state transitions in Grafana Alerting:
 just alert-demo 30 0.1
 ```
 
+## Public vs private exposure (kvm2 profile)
+
+| Surface | Address/port | Visibility | Why |
+| --- | --- | --- | --- |
+| Traefik HTTP | `0.0.0.0:80` | Public | ACME HTTP challenge + redirect to HTTPS |
+| Traefik HTTPS | `0.0.0.0:443` | Public | Public ingress for API |
+| API app port | `8000` | Internal only | Accessed through Traefik service routing |
+| Grafana UI | `10.100.0.2:3000` | Private (WireGuard + allowlist) | Admin surface, not public |
+| Loki | `3100` | Internal only | Backend component |
+| Tempo | `3200` (service internal) | Internal only | Backend component |
+| Mimir | `9009` (service internal) | Internal only | Backend component |
+| WireGuard | `51820/udp` | Restricted peers | Private network transport |
+
 ## More docs
 
 - [architecture.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/architecture.md)
+- [faq-video.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/faq-video.md)
+- [troubleshooting.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/troubleshooting.md)
 - [o11y-quick-queries.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/o11y-quick-queries.md)
 - [grafana-click-paths.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/grafana-click-paths.md)
 - [kvm2-runbook.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/kvm2-runbook.md)
