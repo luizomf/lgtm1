@@ -9,8 +9,8 @@ env_file := ".env"
 grafana_domain := 'lgtm.inprod.cloud'
 api_domain := 'api.inprod.cloud'
 
-GRAFANA_USER := env('GRAFANA_USER', '')
-GRAFANA_PASSWD := env('GRAFANA_PASSWD', '')
+GRAFANA_USER := env('GRAFANA_USER', 'admin')
+GRAFANA_PASSWD := env('GRAFANA_PASSWD', 'admin')
 
 # List all just recipes
 [group('just')]
@@ -189,4 +189,3 @@ traffic-prod rounds="30" sleep_seconds="0.2":
 [group('prod')]
 traffic-scenarios-prod rounds="10" sleep_seconds="0.2":
   seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "http://{{ api_domain }}/scenario?mode=ok" > /dev/null 2>&1 || true; curl -fsS "http://{{ api_domain }}/scenario?mode=warn" > /dev/null 2>&1 || true; curl -fsS "http://{{ api_domain }}/scenario?mode=slow&delay_ms=600" > /dev/null 2>&1 || true; curl -fsS "http://{{ api_domain }}/scenario?mode=error" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
-
