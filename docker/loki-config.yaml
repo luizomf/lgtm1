@@ -24,6 +24,3 @@ schema_config:
       index:
         prefix: index_
         period: 24h
-
-ruler:
-  alertmanager_url: http://localhost:9093

@@ -52,17 +52,14 @@ services:
       - ./loki-config.yaml:/etc/loki/config.yaml:ro
     command: ['-config.file=/etc/loki/config.yaml']
 
-ruler:
-  alertmanager_url: http://localhost:9093
-
   grafana:
     hostname: grafana
     image: grafana/grafana:12.4.0
     ports:
       - 10.100.0.2:3000:3000
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWD:-admin}
     restart: unless-stopped
     volumes:
       - grafana-data:/var/lib/grafana
