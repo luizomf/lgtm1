@@ -59,6 +59,7 @@ In general, just follow best practices.
    `docs`).
 5. Open a PR and reference the issue in the body (`closes #N`) when applicable.
 6. Merge after review.
+7. When merging with GitHub CLI, prefer `gh pr merge --squash --delete-branch`.
 
 The git history plus Issues and PRs are the main record and context.
 
