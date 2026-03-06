@@ -82,6 +82,12 @@ say *ARGS:
   #!/bin/bash
   echo "{{ ARGS }}" | ~/Desktop/tutoriais_e_cursos/loudterm/.venv/bin/python ~/Desktop/tutoriais_e_cursos/loudterm/src/loudterm/backend/kokoro82m/cliplay.py -i -
 
+# 🔉 Terminal TTS: uses Kokoro to speak in terminal (English only)
+[group('misc')]
+say-pt *ARGS:
+  #!/bin/bash
+  echo "{{ ARGS }}" | ~/Desktop/tutoriais_e_cursos/loudterm/.venv/bin/python ~/Desktop/tutoriais_e_cursos/loudterm/src/loudterm/backend/kokoro82m/cliplay.py -v pm_alex -l p -i -
+
 # Dev: Start the full LGTM stack with the demo API
 [group('stack')]
 up *ARGS:
