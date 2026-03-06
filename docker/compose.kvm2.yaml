@@ -66,16 +66,6 @@ services:
       - ./grafana/provisioning/datasources/default.yaml:/etc/grafana/provisioning/datasources/default.yaml:ro
       - ./grafana/provisioning/dashboards/default.yaml:/etc/grafana/provisioning/dashboards/default.yaml:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.lgtm.rule=Host(`lgtm.inprod.cloud`)
-      - traefik.http.routers.lgtm.entrypoints=websecure
-      - traefik.http.routers.lgtm.tls=true
-      - traefik.http.routers.lgtm.tls.certresolver=le
-      - traefik.http.routers.lgtm.priority=100
-      - traefik.http.routers.lgtm.middlewares=grafana-allow
-      - traefik.http.middlewares.grafana-allow.ipallowlist.sourcerange=10.100.0.0/24,187.108.118.25/32
-      - traefik.http.services.lgtm.loadbalancer.server.port=3000
 
   tempo:
     hostname: tempo

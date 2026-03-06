@@ -209,14 +209,17 @@ para sua seguranca)_ e comecar do zero de novo.
 Se voce estiver no seu localhost (com `just up`), ao acessar a porta `3000`, so
 digitar `admin` e `admin` para usuario e senha e comecar a brincar.
 
-Em producao, voce precisa configurar o dominio para que todo subdominio aponte
-para o IP do seu VPS. Por exemplo, eu peguei um dominio **inprod.cloud** e usei
-dois subdominios:
+Em producao, o Grafana fica acessivel apenas pela rede privada do **WireGuard**
+(`http://<IP_DO_WIREGUARD>:3000`). Nenhum dominio publico, nenhum firewall pra
+configurar, nenhum brute force na tela de login. Se voce esta dentro da VPN,
+acessa. Se nao esta, nem sabe que existe.
 
-- `api.inprod.cloud` — API publica via Traefik com HTTPS
-- `lgtm.inprod.cloud` — Grafana, acessivel so via WireGuard
+Se voce quiser expor o Grafana em um dominio publico, da pra fazer via Traefik
+com allowlist de IP — mas ai a responsabilidade e sua: firewall, brute force
+protection, rate limiting... coisa que foge do escopo desse video.
 
-Troque esses dominios no arquivo:
+A API, por outro lado, e publica de proposito (`api.inprod.cloud` via Traefik
+com HTTPS). Troque esse dominio no arquivo:
 [../docker/compose.kvm2.yaml](../docker/compose.kvm2.yaml)
 
 Ja deixei os Data Sources conectados para voce. **Loki**, **Tempo** e **Mimir**
