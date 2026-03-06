@@ -1,12 +1,30 @@
 name: demo-api
-interval: 30s
+interval: 15s
 rules:
   - alert: DemoApiHighErrorRatio
-    expr: 100 * sum(rate(demo_api_requests_total{demo_scenario_status="error"}[5m])) / clamp_min(sum(rate(demo_api_requests_total[5m])), 0.0001) > 10
+    expr: >
+      100
+      * sum(rate(demo_api_requests_total{demo_scenario_status="error"}[2m]))
+      / clamp_min(sum(rate(demo_api_requests_total[2m])), 0.0001)
+      > 10
     for: 30s
     labels:
       severity: warning
       stack: lgtm-demo
     annotations:
-      summary: Demo API error ratio is high
-      description: Error ratio has been above 10% for at least 30 seconds.
+      summary: "Demo API error ratio is high"
+      description: "Error ratio has been above 10% for at least 30 seconds."
+
+  - alert: DemoApiHighLatency
+    expr: >
+      histogram_quantile(
+        0.95,
+        sum(rate(demo_api_response_delay_ms_milliseconds_bucket[2m])) by (le)
+      ) > 1000
+    for: 30s
+    labels:
+      severity: warning
+      stack: lgtm-demo
+    annotations:
+      summary: "Demo API p95 latency is above 1 second"
+      description: "The 95th percentile response delay has been above 1000 ms for at least 30 seconds."

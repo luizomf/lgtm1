@@ -189,3 +189,50 @@ traffic-prod rounds="30" sleep_seconds="0.2":
 [group('prod')]
 traffic-scenarios-prod rounds="10" sleep_seconds="0.2":
   seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "https://{{ api_domain }}/scenario?mode=ok" > /dev/null 2>&1 || true; curl -fsS "https://{{ api_domain }}/scenario?mode=warn" > /dev/null 2>&1 || true; curl -fsS "https://{{ api_domain }}/scenario?mode=slow&delay_ms=600" > /dev/null 2>&1 || true; curl -fsS "https://{{ api_domain }}/scenario?mode=error" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
+
+# 🔥 Trigger alert demo: flood errors + slow requests to fire both alerts
+[group('demo')]
+chaos rounds="90" sleep_seconds="0.1":
+  #!/bin/bash
+  echo "🔥 Chaos mode: sending errors + slow requests for ~{{ rounds }}s..."
+  echo "   Watch Grafana Alerting — alerts should fire within ~60s."
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c '\
+    curl -fsS "http://127.0.0.1:8000/scenario?mode=error" > /dev/null 2>&1 || true; \
+    curl -fsS "http://127.0.0.1:8000/scenario?mode=error" > /dev/null 2>&1 || true; \
+    curl -fsS "http://127.0.0.1:8000/scenario?mode=error" > /dev/null 2>&1 || true; \
+    curl -fsS "http://127.0.0.1:8000/scenario?mode=slow&delay_ms=2000" > /dev/null 2>&1 || true; \
+    sleep {{ sleep_seconds }}'
+  echo "✅ Done. Alerts should be firing now."
+
+# 🔥 Prod: Trigger alert demo on VPS
+[group('prod')]
+chaos-prod rounds="90" sleep_seconds="0.1":
+  #!/bin/bash
+  echo "🔥 Chaos mode (prod): sending errors + slow requests..."
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c '\
+    curl -fsS "https://{{ api_domain }}/scenario?mode=error" > /dev/null 2>&1 || true; \
+    curl -fsS "https://{{ api_domain }}/scenario?mode=error" > /dev/null 2>&1 || true; \
+    curl -fsS "https://{{ api_domain }}/scenario?mode=error" > /dev/null 2>&1 || true; \
+    curl -fsS "https://{{ api_domain }}/scenario?mode=slow&delay_ms=2000" > /dev/null 2>&1 || true; \
+    sleep {{ sleep_seconds }}'
+  echo "✅ Done. Check Grafana Alerting."
+
+# 🕊️ Send healthy traffic to calm alerts back down
+[group('demo')]
+calm rounds="60" sleep_seconds="0.1":
+  #!/bin/bash
+  echo "🕊️ Calm mode: sending only healthy requests..."
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c '\
+    curl -fsS "http://127.0.0.1:8000/scenario?mode=ok" > /dev/null 2>&1 || true; \
+    sleep {{ sleep_seconds }}'
+  echo "✅ Done. Alerts should resolve soon."
+
+# 🕊️ Prod: Send healthy traffic to calm alerts on VPS
+[group('prod')]
+calm-prod rounds="60" sleep_seconds="0.1":
+  #!/bin/bash
+  echo "🕊️ Calm mode (prod): sending only healthy requests..."
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c '\
+    curl -fsS "https://{{ api_domain }}/scenario?mode=ok" > /dev/null 2>&1 || true; \
+    sleep {{ sleep_seconds }}'
+  echo "✅ Done. Alerts should resolve soon."
