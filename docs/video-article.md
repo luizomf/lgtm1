@@ -179,6 +179,16 @@ Pra não ter que lembrar de comandos gigantes do Docker, eu criei um arquivo
 `Justfile` com algumas receitas. É só rodar `just up` (local, seu computador) ou
 `just deploy` (no servidor) e ser feliz.
 
+Mas, se você acabou de clonar o repositório em uma máquina nova, tem um detalhe
+que vale falar antes para ninguém tomar erro bobo na cara: copie o
+`.env.example` para `.env`.
+
+`cp .env.example .env`
+
+Nesse projeto, o arquivo de exemplo já vem com os defaults do Grafana. Então
+isso aqui não é ritual místico de setup, é só o passinho inicial para o `just`
+e o Docker Compose não reclamarem.
+
 Sem drama, sem ritual estranho de _DevOps_. O Docker Compose vai baixar as
 imagens e subir tudo: **Loki**, **Grafana**, **Tempo**, **Mimir**, **Alloy** e a
 nossa **API em Python**.

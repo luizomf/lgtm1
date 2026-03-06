@@ -44,6 +44,15 @@ traces to Tempo.
 
 ## Local startup
 
+On a fresh clone, create your local env file first:
+
+```bash
+cp .env.example .env
+```
+
+The example file already contains the default Grafana credentials used by this
+demo, so this step is enough to unblock `just up`.
+
 ```bash
 docker compose -f docker/compose.yaml up -d --build
 ```
