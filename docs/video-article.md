@@ -112,9 +112,16 @@ O **Grafana Alloy** é o _carteiro da telemetria_: pega cada sinal, separa por
 tipo e entrega na porta certa, logs para o Loki, métricas para o Mimir, traces
 para o Tempo.
 
-Com isso, o fluxo completo fica:
+No projeto deste vídeo, o fluxo real fica assim:
 
-`Aplicação -> OpenTelemetry -> Alloy -> Loki / Mimir / Tempo -> Grafana`
+- Logs: `API -> stdout -> Docker -> Alloy -> Loki -> Grafana`
+- Métricas da API: `API -> OpenTelemetry -> Alloy -> Mimir -> Grafana`
+- Métricas do host e containers: `node-exporter + cAdvisor (via Alloy) -> Alloy -> Mimir -> Grafana`
+- Traces: `API -> OpenTelemetry -> Alloy -> Tempo -> Grafana`
+
+Falo isso porque, no mundo real, nem todo sinal sai do mesmo lugar. E aqui eu
+quero te mostrar exatamente o que este repositório faz, não um desenho bonito
+que só existe no slide.
 
 ## 5. Como eu estudo isso? (3-5 min): "Em ambiente real, com risco controlado"
 
@@ -178,8 +185,26 @@ nossa **API em Python**.
 
 Pronto... e... Subiu!
 
-Agora é só a gente bater no nosso domínio HTTPS. Nos dois vídeos acima eu
-explico como configurar todo o **VPS**. Mesmo assim, aqui está um
+Mas tem um detalhe importante: stack vazia não rende demo. Depois de subir, eu
+faço sempre esse check mínimo:
+
+- No localhost: `just smoke`
+- Pra encher os dashboards com sinais previsíveis: `just traffic-scenarios 20 0.1`
+- Pra validar se o Alloy está recebendo métricas e traces: `just o11ycheck`
+- Pra demo de alertas no local: `just rules-load` e depois `just alert-demo 30 0.1`
+- No VPS, a versão equivalente é: `just traffic-scenarios-prod 20 0.1`
+- Se eu quiser demo de alertas no VPS também, primeiro carrego as rules do
+  Mimir com o bootstrap descrito em `docs/kvm2-runbook.md`, e só depois forço
+  tráfego com `just chaos-prod`
+
+Aí sim faz sentido abrir a interface.
+
+No localhost, a API fica em `http://127.0.0.1:8000` e o Grafana em
+`http://127.0.0.1:3000`. No VPS, a API entra pelo domínio HTTPS via Traefik e o
+Grafana continua privado.
+
+Agora é só a gente bater no que interessa. Nos dois vídeos acima eu explico
+como configurar todo o **VPS**. Mesmo assim, aqui está um
 [DEV_GUIDE](https://github.com/luizomf/vps_deploy_template/blob/main/DEV_GUIDE.md)
 completo.
 
@@ -190,8 +215,8 @@ Rápido, só pra você não ficar perdido no repositório:
 - Precisa mexer na infra? Pasta `docker/`. Lá tem o `compose.yaml` que sobe
   tudo, as configs do Alloy, Loki, Tempo e Mimir, e os dashboards do Grafana.
 - Precisa mexer no código? Pasta `api/`. A telemetria vive em
-  `infrastructure/telemetry.py`, os logs e métricas por requisição ficam em
-  `presentation/http.py`.
+  `src/api/infrastructure/telemetry.py`, e os logs e métricas por requisição
+  ficam em `src/api/presentation/http.py`.
 
 Simples assim. Dois lugares, duas responsabilidades.
 
@@ -209,25 +234,33 @@ para sua segurança)_ e começar do zero de novo.
 Se você estiver no seu localhost (com `just up`), ao acessar a porta `3000`, é
 só digitar `admin` e `admin` para usuário e senha e começar a brincar.
 
-Em produção, o Grafana fica acessível apenas pela rede privada do **WireGuard**
-(`http://<IP_DO_WIREGUARD>:3000`). Nenhum domínio público, nenhum firewall para
-configurar, nenhum brute force na tela de login. Se você está dentro da VPN,
-acessa. Se não está, nem sabe que existe.
-
-Se você quiser expor o Grafana em um domínio público, dá pra fazer via Traefik
-com allowlist de IP, mas aí a responsabilidade é sua: firewall, brute force
-protection, rate limiting... coisa que foge do escopo desse vídeo.
+No perfil `kvm2` deste repositório, o Grafana em produção fica acessível apenas
+pela rede privada do **WireGuard** (`http://<IP_DO_WIREGUARD>:3000`). É esse o
+cenário pronto do projeto. Se você está dentro da VPN, acessa. Se não está,
+nem sabe que existe.
 
 A API, por outro lado, é pública de propósito (`api.inprod.cloud` via Traefik
 com HTTPS). Troque esse domínio no arquivo:
 [../docker/compose.kvm2.yaml](../docker/compose.kvm2.yaml)
 
-Já deixei os Data Sources conectados para você. **Loki**, **Tempo** e **Mimir**
+Já deixei os Data Sources conectados para você. **Mimir**, **Loki** e **Tempo**
 já estão conversando com o **Grafana** nativamente.
 
-Também deixei três dashboards dentro de 'LGTM Demo' prontos. Mas, antes de sair
-criando um monte de coisas, primeiro use o que já temos para ver como tudo se
-encaixa.
+Também deixei três dashboards dentro de `LGTM Demo` prontos:
+
+- `LGTM Demo Overview`: visão geral da API
+- `LGTM Flight Deck`: painel mais completo para brincar com cenário, logs e taxa
+- `VPS Health`: CPU, memória, disco e rede do servidor
+
+Então, em vez de abrir o Grafana e sair clicando igual um maluco, eu seguiria
+essa ordem:
+
+- `Connections > Data sources`: confirmar que `Mimir`, `Loki` e `Tempo` estão verdes
+- `Dashboards > LGTM Demo Overview`: ver request rate, error ratio e latência
+- `Dashboards > LGTM Flight Deck`: cruzar comportamento da API com logs
+- `Explore > Loki`: investigar erro com query pronta
+- `Explore > Tempo`: abrir trace lenta e ver o waterfall
+- `Alerting > Alert rules`: no local, depois de `just rules-load`, acompanhar `DemoApiHighErrorRatio` e `DemoApiHighLatency`
 
 E não se apegue muito. Você encontra milhares de dashboards do Grafana pela
 internet afora. É só baixar e importar um mísero arquivo `.json`.
@@ -238,8 +271,8 @@ Lembra do cara que acordava de madrugada pra rodar `grep` em produção? Que
 perdia horas navegando entre nodes tentando juntar pedaços de log?
 
 Esse cara agora tem um painel que mostra métricas, traces e logs no mesmo lugar.
-Tem alerta configurado que avisa antes do cliente reclamar. Tem um servidor real
-gerando dados reais, inclusive bot batendo na porta.
+Tem regra de alerta pronta para avisar antes do cliente reclamar. Tem um
+servidor real gerando dados reais, inclusive bot batendo na porta.
 
 Esse cara sou eu. E esse setup é o mesmo que te entreguei aqui.
 
