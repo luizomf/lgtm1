@@ -89,7 +89,7 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "reqps"
         },
         "overrides": []
       },
@@ -217,7 +217,7 @@
         }
       ],
       "timeFrom": "24h",
-      "title": "Requests Count",
+      "title": "Request Rate by Status",
       "transformations": [
         {
           "id": "seriesToRows",
@@ -268,7 +268,7 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "ms"
         },
         "overrides": []
       },
@@ -317,7 +317,7 @@
           "refId": "A"
         }
       ],
-      "title": "Requests Average Duration",
+      "title": "Average Request Duration (ms)",
       "type": "bargauge"
     },
     {
@@ -486,7 +486,7 @@
           "refId": "A"
         }
       ],
-      "title": "Percent of 2xx Requests",
+      "title": "Healthy Request Ratio",
       "type": "timeseries"
     },
     {
@@ -584,7 +584,7 @@
           "refId": "A"
         }
       ],
-      "title": "Percent of 5xx Requests",
+      "title": "Error Request Ratio",
       "type": "timeseries"
     },
     {
@@ -643,7 +643,7 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "ms"
         },
         "overrides": []
       },
@@ -681,7 +681,7 @@
           "refId": "A"
         }
       ],
-      "title": "PR 99 Requests Duration",
+      "title": "P99 Request Duration (ms)",
       "type": "timeseries"
     },
     {
@@ -777,7 +777,7 @@
           "refId": "A"
         }
       ],
-      "title": "Request In Process",
+      "title": "Short-Window Request Rate",
       "type": "timeseries"
     },
     {

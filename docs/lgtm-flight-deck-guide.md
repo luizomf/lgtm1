@@ -51,7 +51,7 @@ How to explain it:
 - "This tells me how much traffic the API handled in this time window."
 - "It is volume, not speed."
 
-### Requests Count
+### Request Rate by Status
 
 What it measures:
 
@@ -67,11 +67,11 @@ How to explain it:
 - "This is where I see the distribution between healthy, warning, slow, and error requests."
 - "It tells me what kind of traffic is happening right now, not just how much."
 
-### Requests Average Duration
+### Average Request Duration (ms)
 
 What it measures:
 
-- average request duration
+- average request duration in milliseconds
 
 What the query is doing:
 
@@ -80,7 +80,7 @@ What the query is doing:
 
 How to explain it:
 
-- "This panel shows the average latency."
+- "This panel shows the average latency in milliseconds."
 - "It is useful, but I never trust the average alone because a few very slow requests can hide inside it."
 
 ## Second row: reliability and failure quality
@@ -101,7 +101,7 @@ How to explain it:
 - "This is the raw count of failures."
 - "It is the size of the damage, not the percentage."
 
-### Percent of 2xx Requests
+### Healthy Request Ratio
 
 What it measures:
 
@@ -111,17 +111,12 @@ What the query is doing:
 
 - it divides the rate of non-error requests by the total request rate
 
-Important note:
-
-- the title says `2xx`, but the query is really measuring `not error`
-- in this demo, that works more like a "healthy request ratio"
-
 How to explain it:
 
 - "This is my success ratio over time."
 - "When this drops, the system is still serving traffic, but quality is getting worse."
 
-### Percent of 5xx Requests
+### Error Request Ratio
 
 What it measures:
 
@@ -138,11 +133,11 @@ How to explain it:
 
 ## Third row: latency tail and throughput
 
-### PR 99 Requests Duration
+### P99 Request Duration (ms)
 
 What it measures:
 
-- p99 request duration by endpoint
+- p99 request duration by endpoint in milliseconds
 
 What the query is doing:
 
@@ -159,7 +154,7 @@ How to explain it:
 - "The average can look fine while a small group of users is suffering."
 - "p99 tells me what the worst tail looks like."
 
-### Request In Process
+### Short-Window Request Rate
 
 What it measures:
 
@@ -168,11 +163,6 @@ What it measures:
 What the query is doing:
 
 - it calculates request rate with a `10s` window
-
-Important note:
-
-- the title sounds like concurrent requests in flight
-- the query is actually measuring throughput over a short interval
 
 How to explain it:
 
@@ -235,9 +225,9 @@ How to explain it:
 
 If you want a clean recording flow, follow this order:
 
-1. Start with `Total Requests` and `Requests Count` to establish traffic volume.
-2. Move to `Percent of 2xx Requests` and `Percent of 5xx Requests` to talk about quality.
-3. Use `PR 99 Requests Duration` to explain why averages are not enough.
+1. Start with `Total Requests` and `Request Rate by Status` to establish traffic volume.
+2. Move to `Healthy Request Ratio` and `Error Request Ratio` to talk about quality.
+3. Use `P99 Request Duration (ms)` to explain why averages are not enough.
 4. Show `Log Type Rate` to prove the incident is visible in logs too.
 5. End in `Log of All FastAPI App` to read one concrete example.
 
