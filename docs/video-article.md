@@ -137,7 +137,9 @@ cada tipo no backend certo:
 - métricas para o `Mimir`
 - e traces para `Tempo`
 
-## 6. Como eu estudo isso? (2-3 min): “Em ambiente real, com risco controlado”
+## 6. Como eu estudo isso? (3-5 min): “Em ambiente real, com risco controlado”
+
+> (Cenas Hostinger VPS, hpanel, etc)
 
 Não vou mentir pra você: já tentei “parar pra estudar observabilidade” várias
 vezes no passado. Mas nem considero. Pelo menos para mim, sempre foi **chato pra
@@ -169,10 +171,9 @@ Se você estiver precisando de servidor agora, o link e cupom estão abaixo:
 Agora... vamos subir isso tudo na prática. Não se preocupe se não souber nada,
 todos estamos aprendendo aqui. E eu vou usar o mesmo servidor para isso.
 
-## 7. Indo para VPS (1-2 min): “Git + pull + recipes”
+## 7. Indo para VPS (5-10 min): “Git + pull + recipes”
 
-> Cena: Você no terminal da sua máquina conectando via SSH na Hostinger,
-> copiando o repo do Github e rodando o comando.
+> (Cenas Hostinger VPS, hpanel, etc)
 
 A minha ideia é não perder tempo com infra, código, commando. É te dar algo
 pronto para você não perder duas semanas criando este setup. Este projeto
@@ -201,10 +202,9 @@ explico como configurar todo o **VPS**. Mesmo assim, aqui está um
 [DEV_GUIDE](https://github.com/luizomf/vps_deploy_template/blob/main/DEV_GUIDE.md)
 completo.
 
-## Arquivos importantes (1 min): “Onde mexer quando precisar”
+## Arquivos importantes (5-10 min): “Onde mexer quando precisar”
 
-> (Cena: Seu VSCode aberto, você clica rapidamente no compose.yaml e no
-> config.alloy, só pra mostrar onde fica).
+> (Possível cena de telas por aqui)
 
 Antes de te mostrar o painel bonitão e funcionando, vou só dar um tour mental do
 repositório. Assim, quando você for futricar nas configurações, pelo menos sabe
@@ -239,10 +239,9 @@ Na nossa API, os arquivos Python que tocam em logs e telemetria são:
 Simples assim. Precisou mexer na infra? Pasta docker. Precisou mexer no código?
 Pasta `api`.
 
-## Tour rápido no Grafana (2 min): “Interface sem mistério”
+## Tour rápido no Grafana (5-10 min): “Interface sem mistério”
 
-> (Cena: Tela principal do Grafana gravando. Você navega solto, clica no
-> Dashboard Provisionado, mostra um erro vermelho).
+> (Possível cena de telas por aqui)
 
 Essa tela é intimidadora. Mas, brinque com ela! Crie coisas, apague coisas só
 para se acostumar. Você sempre pode usar a minha receita _(vou omitir o nome
@@ -275,9 +274,9 @@ que já temos disponível para ver como tudo se encaixa.
 E não se apegue muito. Você encontra milhares de `dashboards` do Grafana prontas
 pela Internet à fora. É só baixar e importar um mísero arquivo `.json`.
 
-## 10. Fechamento (1 min): “Gancho para próximos vídeos”
+## 10. Fechamento (2-3 min): “Gancho para próximos vídeos”
 
-> (Cena: Você full screen de novo fechando o vídeo).
+> (Possível cena de telas por aqui)
 
 Ufa! Claro que não dá pra ensinar Engenharia de Observabilidade inteira em um
 vídeo de 15 minutos. E eu também ainda preciso aprender muito sobre isso para
