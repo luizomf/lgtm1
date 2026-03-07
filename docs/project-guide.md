@@ -100,16 +100,18 @@ retries_counter.add(1, attributes={"endpoint": "/checkout", "status": "retry"})
 Use this order while exploring or recording:
 
 1. `Connections > Data sources`
-2. `Dashboards > LGTM Demo > LGTM Demo Overview`
-3. `Dashboards > LGTM Demo > LGTM Flight Deck`
-4. `Dashboards > LGTM Demo > VPS Health`
-5. `Explore > Loki`
-6. `Explore > Tempo`
-7. `Alerting > Alert rules`
+2. `Dashboards > LGTM Demo > LGTM Signals Tour`
+3. `Dashboards > LGTM Demo > LGTM Demo Overview`
+4. `Dashboards > LGTM Demo > LGTM Flight Deck`
+5. `Dashboards > LGTM Demo > VPS Health`
+6. `Explore > Loki`
+7. `Explore > Tempo`
+8. `Alerting > Alert rules`
 
 ### Talk track
 
 - "Before reading charts, confirm the signal pipelines are alive."
+- "Signals Tour is the beginner-friendly bridge between theory and the real dashboards."
 - "Overview gives the API health story."
 - "Flight Deck gives the richer operational story."
 - "VPS Health tells me whether the machine itself is suffering."
@@ -135,6 +137,32 @@ Panels:
 Suggested narration:
 
 - "Traffic, error ratio, latency, then logs."
+
+### LGTM Signals Tour
+
+Use this dashboard when you want the most didactic bridge between the abstract
+concepts in the video and the real signals in Grafana.
+
+Panels:
+
+- `Application Throughput Over Time`
+  Meaning: requests per second split by scenario status
+- `CPU Usage Over Time (%)`
+  Meaning: the simplest concrete example of a metric trend over time
+- `Logs Are Point Events`
+  Meaning: recent application log records with status, delay, and trace id
+- `Trace Rate By Outcome`
+  Meaning: Tempo span metrics split into non-error and error server traces
+- `Service Graph: User -> API`
+  Meaning: trace-derived service graph traffic between the user node and the API
+- `P95 Trace Latency (ms)`
+  Meaning: the latency tail measured from trace span metrics
+
+Suggested narration:
+
+- "Logs are records, metrics are trends, traces are paths."
+- "This screen already shows all three without random ad-hoc queries."
+- "When I say Grafana unifies the signals, this is the dashboard that proves it."
 
 ### LGTM Flight Deck
 
@@ -268,6 +296,24 @@ Host network throughput:
 ```promql
 sum(rate(node_network_receive_bytes_total{job="node-exporter", device!~"lo|docker.*|veth.*|br-.*"}[5m]))
   + sum(rate(node_network_transmit_bytes_total{job="node-exporter", device!~"lo|docker.*|veth.*|br-.*"}[5m]))
+```
+
+Trace rate by outcome:
+
+```promql
+sum(rate(traces_spanmetrics_calls_total{service="lgtm-demo-api", span_kind="SPAN_KIND_SERVER"}[5m])) by (status_code)
+```
+
+Service graph request rate:
+
+```promql
+sum(rate(traces_service_graph_request_total{server="lgtm-demo-api"}[5m])) by (client, server)
+```
+
+P95 trace latency:
+
+```promql
+1000 * histogram_quantile(0.95, sum(rate(traces_spanmetrics_latency_bucket{service="lgtm-demo-api", span_kind="SPAN_KIND_SERVER"}[5m])) by (le))
 ```
 
 ### LogQL (Loki)

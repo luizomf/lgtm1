@@ -98,10 +98,65 @@ Use this when you want the cleanest sequence on camera:
 7. run `just up` or `just deploy`
 8. generate traffic
 9. open Grafana and validate data sources
-10. walk through dashboards
-11. end with what this base unlocks
+10. show `LGTM Signals Tour` to bridge the abstract concepts into real signals
+11. walk through the operational dashboards
+12. end with what this base unlocks
 
-## 4. Full Article / Script
+## 4. Visual Support Checklist
+
+Use this checklist while editing. The goal is to replace vague visual filler
+with either project-native Grafana footage or deliberately abstract stock.
+
+- [ ] `0001-intro.srt` `00:00:00 -> 00:00:29`
+  Beat: promise of a ready-made repo and stack.
+  Visual: quick repo hero or title card with `LGTM`, `OpenTelemetry`, `Grafana`, `Loki`, `Tempo`, `Mimir`.
+  Source: project-native capture.
+- [ ] `0001-intro.srt` `00:00:39 -> 00:00:57`
+  Beat: studying on a real server.
+  Visual: short `VPS Health` hero shot or a private Grafana-over-VPN shot.
+  Source: project-native capture.
+- [ ] `0002-tuto1.srt` `00:00:00 -> 00:01:17`
+  Beat: pain, on-call stress, debugging pressure.
+  Visual: dark terminal, alert-like stock, tired-night coding stock, or chat/support style inserts.
+  Source: stock or abstract B-roll.
+- [ ] `0002-tuto1.srt` `00:01:17 -> 00:02:08`
+  Beat: logs are records of events.
+  Visual: `LGTM Signals Tour > Logs Are Point Events`.
+  Source: project-native Grafana.
+- [ ] `0002-tuto1.srt` `00:02:08 -> 00:02:32`
+  Beat: metrics answer questions over time, CPU as the simplest example.
+  Visual: `LGTM Signals Tour > CPU Usage Over Time (%)`, then `Application Throughput Over Time`.
+  Source: project-native Grafana.
+- [ ] `0002-tuto1.srt` `00:02:32 -> 00:03:10`
+  Beat: traces show the path of a request.
+  Visual: `LGTM Signals Tour > Trace Rate By Outcome`, then `Service Graph: User -> API`.
+  Source: project-native Grafana.
+- [ ] `0002-tuto1.srt` `00:03:10 -> 00:03:35`
+  Beat: Grafana unifies the signals.
+  Visual: full-screen `LGTM Signals Tour`.
+  Source: project-native Grafana.
+- [ ] `0002-tuto1.srt` `00:03:40 -> 00:06:46`
+  Beat: architecture walkthrough from storage back to the app.
+  Visual: the Excalidraw build plus quick cutaways to the matching dashboard panels or Explore views.
+  Source: mixed, mostly project-native.
+- [ ] `0003-publi.srt` `00:00:00 -> 00:01:24`
+  Beat: local vs VPS organization and Compose files.
+  Visual: repo tree, `docker/compose.yaml`, and `docker/compose.kvm2.yaml`.
+  Source: project-native capture.
+- [ ] `0003-publi.srt` `00:01:24 -> 00:02:03`
+  Beat: private Grafana access over WireGuard.
+  Visual: VPN/private-network diagram or a subtle stock insert about private network access.
+  Source: diagram or stock.
+- [ ] `0003-publi.srt` `00:02:03 -> 00:03:10`
+  Beat: direct sponsor segment.
+  Visual: sponsor-specific footage, site, coupon, or approved brand material.
+  Source: sponsor segment.
+- [ ] `0003-publi.srt` `00:03:10 -> 00:04:09`
+  Beat: real-server study is less boring than synthetic local-only traffic.
+  Visual: `VPS Health`, `LGTM Flight Deck`, and `LGTM Signals Tour` rotating as proof of real signals.
+  Source: project-native Grafana.
+
+## 5. Full Article / Script
 
 ## Intro: reacting to logs is expensive
 
@@ -289,7 +344,7 @@ If your head is already full of ideas, tell me what the next step should be:
 more alerts, heavier Python instrumentation, deeper production hardening, or
 something else entirely.
 
-## 5. FAQ / Comment Replies
+## 6. FAQ / Comment Replies
 
 ### "Why one VPS? That is a SPOF."
 
