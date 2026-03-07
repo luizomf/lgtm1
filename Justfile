@@ -82,7 +82,7 @@ say *ARGS:
   #!/bin/bash
   echo "{{ ARGS }}" | ~/Desktop/tutoriais_e_cursos/loudterm/.venv/bin/python ~/Desktop/tutoriais_e_cursos/loudterm/src/loudterm/backend/kokoro82m/cliplay.py -i -
 
-# 🔉 Terminal TTS: uses Kokoro to speak in terminal (English only)
+# 🔉 Terminal TTS: uses Kokoro to speak in terminal (PT-BR only)
 [group('misc')]
 say-pt *ARGS:
   #!/bin/bash
