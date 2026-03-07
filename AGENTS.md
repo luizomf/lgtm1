@@ -22,7 +22,7 @@ AI context for this repository. Read this before making changes.
 A base for beginners to learn O11Y with the LGTM Stack. This project WILL BE
 DEPLOYED ON A VPS. **Security is a MUST**.
 
-Refer to @README.md for mor information.
+Refer to @README.md for more information.
 
 ### Guidelines
 
@@ -39,27 +39,27 @@ Prefer sound engineering principles and practical best practices.
 - Build small, testable components with a single responsibility.
 - Prefer dependency inversion over concrete coupling.
 - Prefer small, scoped commits.
-- Avoid pushing directly to `main`. Prefer Issues and PRs for review.
+- Avoid pushing directly to `main`. Prefer branches and PRs for review.
 - Use conventional commits.
-- Add tests when applicable and keep them passing.
+- Update tests when changing behavior in areas that already have tests.
 - Document code when needed, but avoid obvious comments.
-
-In general, just follow best practices.
 
 ---
 
 ## Workflow
 
-**Issue -> branch -> PR -> merge** is the default workflow.
+**Branch -> PR -> merge** is the default workflow.
 
-1. Prefer starting from a GitHub Issue (`gh` and `git` available).
-2. If the work is substantial and no issue exists, create one first.
-3. Create a branch for the work.
-4. Commit in small conventional commits (`feat`, `fix`, `refactor`, `chore`,
+Use a GitHub Issue when the work is substantial or needs extra context,
+discussion, or tracking.
+
+1. Create a branch for the work.
+2. Commit in small conventional commits (`feat`, `fix`, `refactor`, `chore`,
    `docs`).
-5. Open a PR and reference the issue in the body (`closes #N`) when applicable.
-6. Merge after review.
-7. When merging with GitHub CLI, prefer `gh pr merge --squash --delete-branch`.
+3. Open a PR.
+4. If there is an Issue, reference it in the PR body (`closes #N`).
+5. Merge after review.
+6. When merging with GitHub CLI, prefer `gh pr merge --squash --delete-branch`.
 
 The git history plus Issues and PRs are the main record and context.
 
