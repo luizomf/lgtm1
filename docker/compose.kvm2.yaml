@@ -1,3 +1,9 @@
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   traefik:
     container_name: traefik
@@ -21,6 +27,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik_letsencrypt:/letsencrypt
+    logging: *default-logging
     restart: unless-stopped
 
   api:
@@ -40,12 +47,13 @@ services:
       - traefik.http.routers.api.tls.certresolver=le
       - traefik.http.routers.api.priority=100
       - traefik.http.services.api.loadbalancer.server.port=8000
-
+    logging: *default-logging
     restart: unless-stopped
 
   loki:
     hostname: loki
     image: grafana/loki:3.6.7
+    logging: *default-logging
     restart: unless-stopped
     volumes:
       - loki-data:/loki
@@ -60,6 +68,7 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWD:-admin}
+    logging: *default-logging
     restart: unless-stopped
     volumes:
       - grafana-data:/var/lib/grafana
@@ -71,6 +80,7 @@ services:
     hostname: tempo
     image: grafana/tempo:2.10.1
     command: ['-config.file=/etc/tempo/config.yaml']
+    logging: *default-logging
     restart: unless-stopped
     volumes:
       - tempo-data:/var/tempo
@@ -81,6 +91,7 @@ services:
     hostname: mimir
     image: grafana/mimir:2.17.7
     command: ['-config.file=/etc/mimir/config.yaml', '-target=all']
+    logging: *default-logging
     restart: unless-stopped
     volumes:
       - mimir-data:/data/mimir
@@ -94,6 +105,7 @@ services:
       - run
       - --server.http.listen-addr=0.0.0.0:12345
       - /etc/alloy/config.alloy
+    logging: *default-logging
     restart: unless-stopped
     volumes:
       - ./alloy-config.alloy:/etc/alloy/config.alloy:ro
@@ -108,6 +120,7 @@ services:
       - --path.rootfs=/rootfs
       - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)
       - --collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|nsfs|overlay|proc|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs|tmpfs)$
+    logging: *default-logging
     restart: unless-stopped
     volumes:
       - /proc:/host/proc:ro
