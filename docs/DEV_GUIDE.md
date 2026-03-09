@@ -1413,6 +1413,15 @@ Esse comando faz o seguinte:
 Durante a execução, pressione `ENTER` para todas as perguntas, usando o caminho
 padrão e deixando a chave sem senha.
 
+Estou usando o caminho padrão aqui de propósito. A vantagem é que o próprio
+servidor passa a usar essa chave por padrão ao conversar com o GitHub, o que
+evita configuração extra de SSH só para fazer `git pull`, `git fetch` e outros
+comandos do Git dentro da VPS.
+
+Mas atenção: isso só é seguro se você ainda não tiver uma chave importante em
+`~/.ssh/id_ed25519`. Se esse arquivo já existir e você não quiser sobrescrevê-lo,
+pare aqui e gere a chave com outro nome usando `ssh-keygen -t ed25519 -f CAMINHO_DA_CHAVE`.
+
 O resultado esperado é a criação de dois arquivos no diretório `~/.ssh` do
 usuário atual:
 
