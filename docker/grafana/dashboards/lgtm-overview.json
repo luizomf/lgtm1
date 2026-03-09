@@ -161,7 +161,7 @@
             "uid": "mimir"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(demo_api_response_delay_ms_milliseconds_bucket[5m])) by (le))",
+          "expr": "1000 * histogram_quantile(0.95, sum(rate(traces_spanmetrics_latency_bucket{service=\"lgtm-demo-api\", span_kind=\"SPAN_KIND_SERVER\"}[5m])) by (le))",
           "legendFormat": "p95",
           "range": true,
           "refId": "A"
@@ -172,13 +172,13 @@
             "uid": "mimir"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.50, sum(rate(demo_api_response_delay_ms_milliseconds_bucket[5m])) by (le))",
+          "expr": "1000 * histogram_quantile(0.50, sum(rate(traces_spanmetrics_latency_bucket{service=\"lgtm-demo-api\", span_kind=\"SPAN_KIND_SERVER\"}[5m])) by (le))",
           "legendFormat": "p50",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "API Delay (ms)",
+      "title": "API Latency (ms)",
       "type": "timeseries"
     },
     {
