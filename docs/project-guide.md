@@ -412,9 +412,12 @@ Production:
 
 ```bash
 just deploy
+just rules-load-prod
+just rules-state-prod
 just traffic-prod 30 0.2
 just traffic-scenarios-prod 20 0.1
 just chaos-prod
+just alert-demo-prod 30 0.1
 just calm-prod
 ```
 
@@ -426,6 +429,10 @@ Production recipes follow the same idea:
   Deterministic scenario cycle for repeatable demos
 - `chaos-prod`
   Alert-firing traffic with concentrated errors and latency
+- `rules-load-prod` / `rules-state-prod`
+  Manage Mimir alert rules through the internal Docker network on the VPS
+- `alert-demo-prod`
+  Load rules, run alert-firing traffic, and print the current rule state
 - `calm-prod`
   Healthy recovery traffic
 
