@@ -230,6 +230,34 @@ compose-prod *ARGS:
 deploy *ARGS:
   just compose-prod up -d --build {{ ARGS }}
 
+# Prod: Load demo alert rules into the internal Mimir ruler on the VPS.
+[group('prod')]
+rules-load-prod namespace="demo" file="docker/mimir-rules/demo-api.yaml":
+  #!/usr/bin/env bash
+  mimir_ip=$(docker inspect -f '{{"{{"}}range .NetworkSettings.Networks{{"}}"}}{{"{{"}}.IPAddress{{"}}"}}{{"{{"}}end{{"}}"}}' mimir)
+  curl -fsS -X POST "http://${mimir_ip}:9009/prometheus/config/v1/rules/{{ namespace }}" --data-binary "@{{ file }}"
+
+# Prod: Show configured Mimir rule groups from inside the Docker network.
+[group('prod')]
+rules-list-prod:
+  #!/usr/bin/env bash
+  mimir_ip=$(docker inspect -f '{{"{{"}}range .NetworkSettings.Networks{{"}}"}}{{"{{"}}.IPAddress{{"}}"}}{{"{{"}}end{{"}}"}}' mimir)
+  curl -fsS "http://${mimir_ip}:9009/prometheus/config/v1/rules"
+
+# Prod: Show evaluated rule state from the internal Mimir ruler on the VPS.
+[group('prod')]
+rules-state-prod:
+  #!/usr/bin/env bash
+  mimir_ip=$(docker inspect -f '{{"{{"}}range .NetworkSettings.Networks{{"}}"}}{{"{{"}}.IPAddress{{"}}"}}{{"{{"}}end{{"}}"}}' mimir)
+  curl -fsS "http://${mimir_ip}:9009/prometheus/api/v1/rules"
+
+# Prod: End-to-end alert demo on the VPS.
+[group('prod')]
+alert-demo-prod rounds="30" sleep_seconds="0.2":
+  just rules-load-prod
+  just chaos-prod {{ rounds }} {{ sleep_seconds }}
+  just rules-state-prod
+
 # Prod: Generate random unstable traffic via `/unstable`.
 [group('prod')]
 traffic-prod rounds="30" sleep_seconds="0.2":

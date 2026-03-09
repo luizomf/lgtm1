@@ -119,6 +119,16 @@ just alert-demo 30 0.1
 This helper loads the demo rules, runs alert-firing traffic, and then prints
 the current rule state.
 
+On the VPS profile, use the production variants that talk to Mimir through the
+internal Docker network instead of a published host port:
+
+```bash
+just rules-load-prod
+just rules-list-prod
+just rules-state-prod
+just alert-demo-prod 30 0.1
+```
+
 ## Public vs private exposure (kvm2 profile)
 
 | Surface | Address/port | Visibility | Why |
