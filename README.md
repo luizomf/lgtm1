@@ -66,6 +66,17 @@ just traffic-scenarios 20 0.1
 just alert-demo 30 0.1
 ```
 
+Traffic helpers:
+
+- `just traffic 30 0.2`
+  Hits `/unstable` repeatedly to generate random observability signals.
+- `just traffic-scenarios 20 0.1`
+  Sends a deterministic `ok -> warn -> slow -> error` cycle for predictable demos.
+- `just chaos 90 0.1`
+  Floods errors and slow requests to push dashboards and alerts into a clear failure state.
+- `just calm 60 0.1`
+  Sends only healthy requests to help alerts recover.
+
 ## Useful endpoints
 
 - API: [http://127.0.0.1:8000](http://127.0.0.1:8000)
@@ -104,6 +115,9 @@ To force traffic and watch state transitions in Grafana Alerting:
 ```bash
 just alert-demo 30 0.1
 ```
+
+This helper loads the demo rules, runs alert-firing traffic, and then prints
+the current rule state.
 
 ## Public vs private exposure (kvm2 profile)
 

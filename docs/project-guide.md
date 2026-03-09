@@ -424,6 +424,19 @@ just rules-load
 just rules-state
 ```
 
+Meaning:
+
+- `just smoke`
+  Quick health and endpoint sanity check.
+- `just traffic`
+  Repeats calls to `/unstable`, so the API picks random outcomes for a more organic-looking dashboard.
+- `just traffic-scenarios`
+  Sends the same `ok`, `warn`, `slow`, and `error` sequence every round.
+- `just chaos`
+  Pushes multiple errors plus slow requests to create obvious alert conditions.
+- `just calm`
+  Sends only healthy requests so recovery is easy to observe.
+
 Production:
 
 ```bash
@@ -434,6 +447,17 @@ just chaos-prod
 just calm-prod
 ```
 
+Production recipes follow the same idea:
+
+- `traffic-prod`
+  Random unstable traffic against `/unstable`
+- `traffic-scenarios-prod`
+  Deterministic scenario cycle for repeatable demos
+- `chaos-prod`
+  Alert-firing traffic with concentrated errors and latency
+- `calm-prod`
+  Healthy recovery traffic
+
 ## 7. Local And KVM2 Runbook
 
 ### Local startup
@@ -443,6 +467,12 @@ cp .env.example .env
 just up
 just smoke
 just traffic-scenarios 20 0.1
+```
+
+If you want randomness instead of a predictable cycle, use:
+
+```bash
+just traffic 50 0.1
 ```
 
 Local URLs:

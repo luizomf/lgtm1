@@ -5,6 +5,7 @@ set dotenv-load := true
 compose_file := "docker/compose.yaml"
 compose_prod_file := "docker/compose.kvm2.yaml"
 env_file := ".env"
+local_api_base_url := "http://127.0.0.1:8000"
 
 grafana_domain := env('GRAFANA_DOMAIN', 'grafana.example.com')
 api_domain := env('API_DOMAIN', 'api.example.com')
@@ -17,7 +18,6 @@ GRAFANA_PASSWD := env('GRAFANA_PASSWD', 'admin')
 [group('just')]
 @list:
   just -l
-  echo $OLLAMA_KEEP_ALIVE
 
 # Alias to `docker ...`
 [group('docker')]
@@ -32,7 +32,7 @@ compose *ARGS:
 # Alias to `docker compose down`
 [group('docker')]
 down *ARGS:
-  just compose down
+  just compose down {{ ARGS }}
 
 # 🚨 DELETE ALL THINGS DOCKER
 [group('🚨 danger')]
@@ -40,8 +40,8 @@ nukeall: down
   @-just docker stop $(docker ps -a -q) > /dev/null 2>&1 || true
   @-just docker rm $(docker ps -a -q) > /dev/null 2>&1 || true
 
-  @-just docker volume $(docker volume ls -q) > /dev/null 2>&1 || true
-  @-just docker network $(docker network ls -q) > /dev/null 2>&1 || true
+  @-just docker volume rm $(docker volume ls -q) > /dev/null 2>&1 || true
+  @-just docker network rm $(docker network ls -q) > /dev/null 2>&1 || true
 
   @-just docker system prune -f > /dev/null 2>&1 || true
   @-just docker volume prune -f > /dev/null 2>&1 || true
@@ -117,20 +117,62 @@ logs *ARGS:
 # Quick API smoke test for demo flow
 [group('demo')]
 smoke:
-  curl -fsS http://127.0.0.1:8000/health
-  curl -fsS "http://127.0.0.1:8000/scenario?mode=warn"
-  curl -fsS "http://127.0.0.1:8000/scenario?mode=slow&delay_ms=200"
-  curl -fsS "http://127.0.0.1:8000/scenario?mode=error" || true
+  curl -fsS {{ local_api_base_url }}/health
+  curl -fsS "{{ local_api_base_url }}/scenario?mode=warn"
+  curl -fsS "{{ local_api_base_url }}/scenario?mode=slow&delay_ms=200"
+  curl -fsS "{{ local_api_base_url }}/scenario?mode=error" || true
 
-# Generate mixed request traffic for dashboards
+# Internal: verify that the target API is responding before traffic generation.
+[private]
+_require-api-health base_url:
+  #!/usr/bin/env bash
+  curl -fsS "{{ base_url }}/health" > /dev/null || {
+    echo "API healthcheck failed at {{ base_url }}/health. Check the target URL and your deploy."
+    exit 1
+  }
+
+# Internal: hit the random unstable endpoint repeatedly.
+[private]
+_traffic-random base_url rounds sleep_seconds:
+  #!/usr/bin/env bash
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "{{ base_url }}/unstable" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
+
+# Internal: send a deterministic ok/warn/slow/error scenario cycle.
+[private]
+_traffic-scenarios base_url rounds sleep_seconds:
+  #!/usr/bin/env bash
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "{{ base_url }}/scenario?mode=ok" > /dev/null 2>&1 || true; curl -fsS "{{ base_url }}/scenario?mode=warn" > /dev/null 2>&1 || true; curl -fsS "{{ base_url }}/scenario?mode=slow&delay_ms=600" > /dev/null 2>&1 || true; curl -fsS "{{ base_url }}/scenario?mode=error" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
+
+# Internal: send concentrated errors and slow requests to trip alerts.
+[private]
+_traffic-chaos base_url rounds sleep_seconds:
+  #!/usr/bin/env bash
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c '\
+    curl -fsS "{{ base_url }}/scenario?mode=error" > /dev/null 2>&1 || true; \
+    curl -fsS "{{ base_url }}/scenario?mode=error" > /dev/null 2>&1 || true; \
+    curl -fsS "{{ base_url }}/scenario?mode=error" > /dev/null 2>&1 || true; \
+    curl -fsS "{{ base_url }}/scenario?mode=slow&delay_ms=2000" > /dev/null 2>&1 || true; \
+    sleep {{ sleep_seconds }}'
+
+# Internal: send only healthy traffic to help alerts recover.
+[private]
+_traffic-calm base_url rounds sleep_seconds:
+  #!/usr/bin/env bash
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c '\
+    curl -fsS "{{ base_url }}/scenario?mode=ok" > /dev/null 2>&1 || true; \
+    sleep {{ sleep_seconds }}'
+
+# Generate random unstable traffic via `/unstable` for dashboard activity.
 [group('demo')]
 traffic rounds="30" sleep_seconds="0.2":
-  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "http://127.0.0.1:8000/unstable" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
+  just _require-api-health {{ local_api_base_url }}
+  just _traffic-random {{ local_api_base_url }} {{ rounds }} {{ sleep_seconds }}
 
-# Generate deterministic scenario traffic
+# Generate a deterministic ok/warn/slow/error traffic cycle.
 [group('demo')]
 traffic-scenarios rounds="10" sleep_seconds="0.2":
-  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "http://127.0.0.1:8000/scenario?mode=ok" > /dev/null 2>&1 || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=warn" > /dev/null 2>&1 || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=slow&delay_ms=600" > /dev/null 2>&1 || true; curl -fsS "http://127.0.0.1:8000/scenario?mode=error" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
+  just _require-api-health {{ local_api_base_url }}
+  just _traffic-scenarios {{ local_api_base_url }} {{ rounds }} {{ sleep_seconds }}
 
 # Verify collector ingestion counters from Alloy
 [group('o11y')]
@@ -152,11 +194,11 @@ rules-list:
 rules-state:
   curl -fsS http://127.0.0.1:9009/prometheus/api/v1/rules
 
-# End-to-end alert demo: load rules and generate traffic that should fire alerts
+# End-to-end alert demo: load rules and run alert-firing traffic.
 [group('o11y')]
 alert-demo rounds="30" sleep_seconds="0.2":
   just rules-load
-  just traffic-scenarios {{ rounds }} {{ sleep_seconds }}
+  just chaos {{ rounds }} {{ sleep_seconds }}
   just rules-state
 
 # Show Grafana datasources to confirm provisioning
@@ -187,65 +229,51 @@ compose-prod *ARGS:
 deploy *ARGS:
   just compose-prod up -d --build {{ ARGS }}
 
-# Generate mixed request traffic for dashboards
+# Prod: Generate random unstable traffic via `/unstable`.
 [group('prod')]
 traffic-prod rounds="30" sleep_seconds="0.2":
-  #!/bin/bash
-  curl -fsS "{{ api_base_url }}/health" > /dev/null || { echo "API healthcheck failed at {{ api_base_url }}/health. Check API_BASE_URL and your deploy."; exit 1; }
-  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "{{ api_base_url }}/unstable" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
+  just _require-api-health {{ api_base_url }}
+  just _traffic-random {{ api_base_url }} {{ rounds }} {{ sleep_seconds }}
 
-# Generate deterministic scenario traffic
+# Prod: Generate a deterministic ok/warn/slow/error traffic cycle.
 [group('prod')]
 traffic-scenarios-prod rounds="10" sleep_seconds="0.2":
-  #!/bin/bash
-  curl -fsS "{{ api_base_url }}/health" > /dev/null || { echo "API healthcheck failed at {{ api_base_url }}/health. Check API_BASE_URL and your deploy."; exit 1; }
-  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "{{ api_base_url }}/scenario?mode=ok" > /dev/null 2>&1 || true; curl -fsS "{{ api_base_url }}/scenario?mode=warn" > /dev/null 2>&1 || true; curl -fsS "{{ api_base_url }}/scenario?mode=slow&delay_ms=600" > /dev/null 2>&1 || true; curl -fsS "{{ api_base_url }}/scenario?mode=error" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
+  just _require-api-health {{ api_base_url }}
+  just _traffic-scenarios {{ api_base_url }} {{ rounds }} {{ sleep_seconds }}
 
-# 🔥 Trigger alert demo: flood errors + slow requests to fire both alerts
+# 🔥 Trigger alert demo: flood errors + slow requests to fire both alerts.
 [group('demo')]
 chaos rounds="90" sleep_seconds="0.1":
   #!/bin/bash
   echo "🔥 Chaos mode: sending errors + slow requests for ~{{ rounds }}s..."
   echo "   Watch Grafana Alerting — alerts should fire within ~60s."
-  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c '\
-    curl -fsS "http://127.0.0.1:8000/scenario?mode=error" > /dev/null 2>&1 || true; \
-    curl -fsS "http://127.0.0.1:8000/scenario?mode=error" > /dev/null 2>&1 || true; \
-    curl -fsS "http://127.0.0.1:8000/scenario?mode=error" > /dev/null 2>&1 || true; \
-    curl -fsS "http://127.0.0.1:8000/scenario?mode=slow&delay_ms=2000" > /dev/null 2>&1 || true; \
-    sleep {{ sleep_seconds }}'
+  just _require-api-health {{ local_api_base_url }}
+  just _traffic-chaos {{ local_api_base_url }} {{ rounds }} {{ sleep_seconds }}
   echo "✅ Done. Alerts should be firing now."
 
-# 🔥 Prod: Trigger alert demo on VPS
+# 🔥 Prod: Trigger alert demo traffic on the VPS.
 [group('prod')]
 chaos-prod rounds="90" sleep_seconds="0.1":
   #!/bin/bash
-  curl -fsS "{{ api_base_url }}/health" > /dev/null || { echo "API healthcheck failed at {{ api_base_url }}/health. Check API_BASE_URL and your deploy."; exit 1; }
   echo "🔥 Chaos mode (prod): sending errors + slow requests..."
-  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c '\
-    curl -fsS "{{ api_base_url }}/scenario?mode=error" > /dev/null 2>&1 || true; \
-    curl -fsS "{{ api_base_url }}/scenario?mode=error" > /dev/null 2>&1 || true; \
-    curl -fsS "{{ api_base_url }}/scenario?mode=error" > /dev/null 2>&1 || true; \
-    curl -fsS "{{ api_base_url }}/scenario?mode=slow&delay_ms=2000" > /dev/null 2>&1 || true; \
-    sleep {{ sleep_seconds }}'
+  just _require-api-health {{ api_base_url }}
+  just _traffic-chaos {{ api_base_url }} {{ rounds }} {{ sleep_seconds }}
   echo "✅ Done. Check Grafana Alerting."
 
-# 🕊️ Send healthy traffic to calm alerts back down
+# 🕊️ Send only healthy traffic to help alerts recover.
 [group('demo')]
 calm rounds="60" sleep_seconds="0.1":
   #!/bin/bash
   echo "🕊️ Calm mode: sending only healthy requests..."
-  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c '\
-    curl -fsS "http://127.0.0.1:8000/scenario?mode=ok" > /dev/null 2>&1 || true; \
-    sleep {{ sleep_seconds }}'
+  just _require-api-health {{ local_api_base_url }}
+  just _traffic-calm {{ local_api_base_url }} {{ rounds }} {{ sleep_seconds }}
   echo "✅ Done. Alerts should resolve soon."
 
-# 🕊️ Prod: Send healthy traffic to calm alerts on VPS
+# 🕊️ Prod: Send only healthy traffic to help alerts recover on the VPS.
 [group('prod')]
 calm-prod rounds="60" sleep_seconds="0.1":
   #!/bin/bash
-  curl -fsS "{{ api_base_url }}/health" > /dev/null || { echo "API healthcheck failed at {{ api_base_url }}/health. Check API_BASE_URL and your deploy."; exit 1; }
   echo "🕊️ Calm mode (prod): sending only healthy requests..."
-  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c '\
-    curl -fsS "{{ api_base_url }}/scenario?mode=ok" > /dev/null 2>&1 || true; \
-    sleep {{ sleep_seconds }}'
+  just _require-api-health {{ api_base_url }}
+  just _traffic-calm {{ api_base_url }} {{ rounds }} {{ sleep_seconds }}
   echo "✅ Done. Alerts should resolve soon."
