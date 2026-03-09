@@ -120,8 +120,8 @@ Panels:
   Meaning: requests per second split into `ok`, `warn`, `slow`, and `error`
 - `Error Ratio (%)`
   Meaning: percentage of traffic that is failing
-- `API Delay (ms)`
-  Meaning: `p50` and `p95` latency from the request duration histogram
+- `API Latency (ms)`
+  Meaning: `p50` and `p95` server-span latency derived from trace span metrics
 - `Scenario Logs`
   Meaning: raw FastAPI scenario logs from Loki
 
