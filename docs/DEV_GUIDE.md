@@ -3,7 +3,9 @@
 > **NOTA:** solicitei ao Codex para fazer uma explicação mais detalhada em cada
 > comando que usei. Espero que ajude ainda mais.
 
-Use este guia para aplicar os comandos passo a passo no seu próprio servidor.
+Use este guia para aplicar os comandos passo a passo no seu próprio servidor. Se
+você só quer os comandos, sem explicações, use
+[DEV_GUIDE_SENIOR.md](./DEV_GUIDE_SENIOR.md).
 
 Estou usando o [KVM 2 da Hostinger](https://hostinger.com/otaviomiranda), mas
 isso deve funcionar em qualquer servidor.
