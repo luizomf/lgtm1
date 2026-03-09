@@ -278,10 +278,15 @@ After that, do not stop at an empty stack.
 Generate some signal:
 
 - `just smoke`
+- `just traffic 30 0.2`
 - `just traffic-scenarios 20 0.1`
 - `just o11ycheck`
 - `just rules-load`
 - `just alert-demo 30 0.1`
+
+Use `traffic` when you want randomness from `/unstable`.
+Use `traffic-scenarios` when you want a predictable cycle.
+Use `alert-demo` when you want rules loaded and an alert-firing run in one command.
 
 On the VPS, the production equivalents exist too, like:
 
