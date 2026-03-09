@@ -312,3 +312,15 @@ just deploy
 ```
 
 ---
+
+## Re-Deploys
+
+Após atualizações, basta fazer pull e rodar `just deploy` novamente.
+
+```bash
+cd /opt/lgtm
+git pull
+just deploy
+```
+
+---
