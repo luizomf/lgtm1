@@ -23,3 +23,8 @@ datasources:
     type: tempo
     access: proxy
     url: http://tempo:3200
+    jsonData:
+      serviceMap:
+        datasourceUid: mimir
+      nodeGraph:
+        enabled: true
