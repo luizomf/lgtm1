@@ -425,34 +425,6 @@ ssh kvm2
 O resultado esperado é que você consiga entrar na VPS usando apenas o apelido
 definido no arquivo `~/.ssh/config`.
 
-### Fazendo a primeira atualização já pela nova sessão SSH
-
-Depois de configurar o acesso SSH, atualize os pacotes instalados na VPS:
-
-```bash
-sudo apt update && sudo apt upgrade -y
-```
-
-Esse comando faz o seguinte:
-
-- `sudo` executa o comando com privilégios administrativos.
-- `apt update` atualiza a lista de pacotes disponíveis nos repositórios.
-- `&&` executa o segundo comando apenas se o primeiro terminar com sucesso.
-- `apt upgrade -y` instala as atualizações disponíveis e responde `yes`
-  automaticamente às confirmações.
-
-O resultado esperado é que a VPS instale atualizações de segurança, correções e
-versões mais recentes dos pacotes já presentes no sistema.
-
-Dependendo do estado da máquina, esse processo pode levar alguns minutos.
-
-Não estranhe se comandos de atualização aparecerem de novo no guia. Isso
-aconteceu de fato no fluxo original e, em alguns pontos, foi útil para garantir
-que o sistema e os repositórios estivessem no estado esperado antes de instalar
-novos componentes.
-
----
-
 ## Atualização e pacotes básicos
 
 Nesta etapa, a ideia é garantir que a VPS esteja com o sistema atualizado, fuso
@@ -485,8 +457,7 @@ aplica o timezone mais adiante.
 ### Atualizando repositórios e pacotes do sistema
 
 ```bash
-sudo apt update -y
-sudo apt upgrade -y
+sudo apt update && sudo apt upgrade -y
 ```
 
 Esses comandos fazem o seguinte:
@@ -496,10 +467,6 @@ Esses comandos fazem o seguinte:
 - `apt upgrade -y` instala as atualizações disponíveis e responde `yes`
   automaticamente às confirmações.
 
-Observação importante: o `-y` em `apt update -y` normalmente é desnecessário,
-porque esse comando não costuma pedir confirmação. Mesmo assim, estou mantendo o
-comando aqui exatamente na forma em que ele foi executado.
-
 O resultado esperado é que a VPS receba correções de segurança, atualizações de
 pacotes já instalados e metadados mais recentes dos repositórios.
 
@@ -507,7 +474,8 @@ pacotes já instalados e metadados mais recentes dos repositórios.
 
 ```bash
 sudo apt install -y vim curl ca-certificates htop python3 \
-python3-dev acl build-essential tree just
+python3-dev acl build-essential tree
+sudo snap install just --classic # mais atualizado
 ```
 
 Esse comando faz o seguinte:
