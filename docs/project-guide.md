@@ -68,9 +68,9 @@ flowchart LR
 
 ### Where custom signals live
 
-- Telemetry bootstrap: [telemetry.py](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/api/src/api/infrastructure/telemetry.py)
-- HTTP scenario flow: [http.py](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/api/src/api/presentation/http.py)
-- App startup: [main.py](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/api/src/api/main.py)
+- Telemetry bootstrap: [telemetry.py](../api/src/api/infrastructure/telemetry.py)
+- HTTP scenario flow: [http.py](../api/src/api/presentation/http.py)
+- App startup: [main.py](../api/src/api/main.py)
 
 ### Custom telemetry pattern
 
@@ -97,7 +97,7 @@ retries_counter.add(1, attributes={"endpoint": "/checkout", "status": "retry"})
 
 ### First click path
 
-Use this order while exploring or recording:
+Use this order while exploring the stack:
 
 1. `Connections > Data sources`
 2. `Dashboards > LGTM Demo > LGTM Signals Tour`
@@ -107,15 +107,6 @@ Use this order while exploring or recording:
 6. `Explore > Loki`
 7. `Explore > Tempo`
 8. `Alerting > Alert rules`
-
-### Talk track
-
-- "Before reading charts, confirm the signal pipelines are alive."
-- "Signals Tour is the beginner-friendly bridge between theory and the real dashboards."
-- "Overview gives the API health story."
-- "Flight Deck gives the richer operational story."
-- "VPS Health tells me whether the machine itself is suffering."
-- "Explore is where I leave the dashboard and investigate."
 
 ## 4. Dashboard Guide
 
@@ -134,14 +125,10 @@ Panels:
 - `Scenario Logs`
   Meaning: raw FastAPI scenario logs from Loki
 
-Suggested narration:
-
-- "Traffic, error ratio, latency, then logs."
-
 ### LGTM Signals Tour
 
-Use this dashboard when you want the most didactic bridge between the abstract
-concepts in the video and the real signals in Grafana.
+Use this dashboard when you want the clearest bridge between the abstract
+concepts and the real signals in Grafana.
 
 Panels:
 
@@ -157,12 +144,6 @@ Panels:
   Meaning: trace-derived service graph traffic between the user node and the API
 - `P95 Trace Latency (ms)`
   Meaning: the latency tail measured from trace span metrics
-
-Suggested narration:
-
-- "Logs are records, metrics are trends, traces are paths."
-- "This screen already shows all three without random ad-hoc queries."
-- "When I say Grafana unifies the signals, this is the dashboard that proves it."
 
 ### LGTM Flight Deck
 
@@ -199,12 +180,6 @@ Panels:
 - `Log of All FastAPI App`
   Meaning: formatted application logs with scenario, HTTP status, delay, trace id, and detail
 
-Suggested narration:
-
-- "Top row is volume and average behavior."
-- "Middle row is service quality."
-- "Bottom row is latency tail, throughput, and evidence in logs."
-
 ### VPS Health
 
 Use this dashboard to separate application pain from machine pain.
@@ -218,10 +193,6 @@ Panels:
 - `CPU and Memory (%)`
 - `Network RX/TX (B/s)`
 - `Disk Used (%)` over time
-
-Suggested narration:
-
-- "This dashboard answers whether the host itself is under pressure."
 
 ## 5. Ready-To-Paste Queries
 
@@ -634,7 +605,7 @@ docker logs traefik --tail 200
 The project goal is twofold:
 
 1. provide a technically sound LGTM baseline
-2. provide a strong narrative base for educational content
+2. provide a reusable learning base for observability practice
 
 Current positioning:
 

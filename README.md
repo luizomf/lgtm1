@@ -135,5 +135,5 @@ the current rule state.
 
 ## More docs
 
-- [project-guide.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/project-guide.md)
-- [video-playbook.md](/Users/luizotavio/Desktop/tutoriais_e_cursos/lgtm1/docs/video-playbook.md)
+- [Project guide](./docs/project-guide.md)
+- [Dev guide](./docs/DEV_GUIDE.md)
