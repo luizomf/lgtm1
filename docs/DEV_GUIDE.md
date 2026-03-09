@@ -13,8 +13,8 @@ Antes de começar, três combinados importantes:
 - a ordem dos passos importa; siga de cima para baixo
 - quando um comando tiver valores de exemplo, troque apenas o valor, não a
   estrutura do comando
-- salvo quando eu avisar o contrário, os comandos estão sendo executados na
-  VPS; no começo deles, você ainda estará como `root`
+- salvo quando eu avisar o contrário, os comandos estão sendo executados na VPS;
+  no começo deles, você ainda estará como `root`
 
 **WIP: o trecho abaixo será substituído quando o vídeo for gravado.**
 
@@ -51,14 +51,13 @@ adiante, serviços como proxy reverso, HTTPS e certificados TLS dependem desse
 apontamento para funcionar corretamente.
 
 Se você estiver usando um VPS da Hostinger, verifique no painel se o seu plano
-inclui um domínio gratuito. Quando essa opção estiver disponível, faça o
-resgate do domínio primeiro. Depois que o domínio estiver registrado, abra a
-área de gerenciamento dele e procure a opção `DNS / Nameservers`.
+inclui um domínio gratuito. Quando essa opção estiver disponível, faça o resgate
+do domínio primeiro. Depois que o domínio estiver registrado, abra a área de
+gerenciamento dele e procure a opção `DNS / Nameservers`.
 
 No meu caso, eu configurei os registros abaixo:
 
-- Tipo: `A`, Nome: `*`, Prioridade: `0`, Conteúdo: `76.13.71.178`, TTL:
-  `14400`
+- Tipo: `A`, Nome: `*`, Prioridade: `0`, Conteúdo: `76.13.71.178`, TTL: `14400`
 - Tipo: `A`, Nome: `@`, Prioridade: `0`, Conteúdo: `76.13.71.178`, TTL: `60`
 
 Esses valores funcionam assim:
@@ -83,11 +82,12 @@ Se você estiver usando outro provedor, a ideia é a mesma: crie um registro do
 tipo `A` apontando o domínio ou subdomínio desejado para o IP público da sua
 VPS.
 
-Se você pretende usar apenas um subdomínio específico, como `grafana.seu-dominio.com`,
-o mais seguro costuma ser criar o registro apenas para esse subdomínio. O uso de
-`*` pode ser conveniente, mas também pode fazer outros subdomínios apontarem
-para a VPS sem que isso seja o que você queria. Se você não tiver certeza,
-prefira configurar apenas os subdomínios que realmente vai usar.
+Se você pretende usar apenas um subdomínio específico, como
+`grafana.seu-dominio.com`, o mais seguro costuma ser criar o registro apenas
+para esse subdomínio. O uso de `*` pode ser conveniente, mas também pode fazer
+outros subdomínios apontarem para a VPS sem que isso seja o que você queria. Se
+você não tiver certeza, prefira configurar apenas os subdomínios que realmente
+vai usar.
 
 Depois de salvar os registros, espere a propagação do DNS. Em alguns casos isso
 acontece rápido, mas também pode levar mais tempo, dependendo do TTL e do
@@ -117,20 +117,20 @@ facilita bastante as primeiras alterações no sistema operacional.
 
 Se preferir, a Hostinger também oferece uma alternativa no próprio painel para
 configurar o hostname. Em `VPS > Configurações > Configurações de VPS`, o painel
-valida se o domínio realmente pertence a você, ou se ele já aponta para a VPS,
-e então pode aplicar essa configuração automaticamente no sistema. Se essa
+valida se o domínio realmente pertence a você, ou se ele já aponta para a VPS, e
+então pode aplicar essa configuração automaticamente no sistema. Se essa
 validação funcionar no seu caso, você pode usar o painel em vez do comando
 `hostnamectl`.
 
 Até o final desta parte de preparação inicial, considere que os comandos estão
-sendo executados como `root`. Mais adiante, quando a chave SSH estiver pronta,
-o fluxo passa para o seu usuário administrativo.
+sendo executados como `root`. Mais adiante, quando a chave SSH estiver pronta, o
+fluxo passa para o seu usuário administrativo.
 
 ### Definindo o hostname do servidor
 
 O primeiro ajuste importante é definir um hostname claro para o servidor. Isso
-ajuda na identificação da máquina, facilita administração futura e evita confusão
-quando você tiver mais de um servidor.
+ajuda na identificação da máquina, facilita administração futura e evita
+confusão quando você tiver mais de um servidor.
 
 Execute o comando abaixo:
 
@@ -205,10 +205,10 @@ ver o nome que você acabou de configurar.
 ## Criando um usuário administrativo
 
 Depois das configurações iniciais, o próximo passo é criar um usuário próprio
-para administração da VPS. Isso é importante porque o acesso direto com
-`root` deve ser evitado no uso diário. A ideia é usar `root` apenas no começo,
-enquanto você prepara a máquina, e depois trabalhar com um usuário normal com
-privilégios administrativos.
+para administração da VPS. Isso é importante porque o acesso direto com `root`
+deve ser evitado no uso diário. A ideia é usar `root` apenas no começo, enquanto
+você prepara a máquina, e depois trabalhar com um usuário normal com privilégios
+administrativos.
 
 Antes de criar o usuário, defini uma variável com o nome desejado:
 
@@ -222,11 +222,11 @@ Esse comando faz o seguinte:
 - `YOUR_USERNAME` é o nome da variável.
 - `"luizotavio"` é o valor definido para ela.
 
-No seu caso, você deve trocar `luizotavio` pelo nome do usuário que deseja
-criar na VPS.
+No seu caso, você deve trocar `luizotavio` pelo nome do usuário que deseja criar
+na VPS.
 
-Definir essa variável não é obrigatório, mas ajuda a reutilizar o mesmo nome
-nos próximos comandos sem precisar digitá-lo manualmente toda vez.
+Definir essa variável não é obrigatório, mas ajuda a reutilizar o mesmo nome nos
+próximos comandos sem precisar digitá-lo manualmente toda vez.
 
 ### Criando o usuário
 
@@ -266,8 +266,8 @@ O resultado esperado é que esse novo usuário possa administrar o sistema usand
 
 ### Adicionando o usuário ao grupo do Docker
 
-Se o Docker já estiver instalado na VPS, você também pode adicionar o usuário
-ao grupo `docker`:
+Se o Docker já estiver instalado na VPS, você também pode adicionar o usuário ao
+grupo `docker`:
 
 ```bash
 usermod -aG docker $YOUR_USERNAME
@@ -316,12 +316,12 @@ Esse comando faz o seguinte:
 O resultado esperado é que o terminal passe a funcionar como o novo usuário,
 permitindo verificar se a conta foi criada corretamente.
 
-Se tudo der certo, você já terá um usuário próprio para continuar a
-configuração da VPS com mais segurança.
+Se tudo der certo, você já terá um usuário próprio para continuar a configuração
+da VPS com mais segurança.
 
-Se quiser voltar para o `root` nesse terminal depois do teste, use `exit`.
-Daqui em diante, o fluxo ideal é seguir usando o seu usuário administrativo e
-prefixar com `sudo` apenas o que realmente exigir privilégio elevado.
+Se quiser voltar para o `root` nesse terminal depois do teste, use `exit`. Daqui
+em diante, o fluxo ideal é seguir usando o seu usuário administrativo e prefixar
+com `sudo` apenas o que realmente exigir privilégio elevado.
 
 ---
 
@@ -351,8 +351,8 @@ O resultado esperado é a criação de dois arquivos no seu computador local:
 - `~/.ssh/id_hostinger`
 - `~/.ssh/id_hostinger.pub`
 
-No seu caso, adapte o comentário `"USUARIO"` como preferir. Ele não interfere
-na autenticação, mas ajuda a identificar a chave depois.
+No seu caso, adapte o comentário `"USUARIO"` como preferir. Ele não interfere na
+autenticação, mas ajuda a identificar a chave depois.
 
 ### Copiando a chave pública para a VPS
 
@@ -453,11 +453,11 @@ novos componentes.
 
 ## Atualização e pacotes básicos
 
-Nesta etapa, a ideia é garantir que a VPS esteja com o sistema atualizado,
-fuso horário configurado corretamente e algumas ferramentas básicas instaladas.
-Esses pacotes ajudam bastante na administração do servidor, inspeção de
-arquivos, execução de scripts e compilação de dependências nativas quando isso
-for necessário.
+Nesta etapa, a ideia é garantir que a VPS esteja com o sistema atualizado, fuso
+horário configurado corretamente e algumas ferramentas básicas instaladas. Esses
+pacotes ajudam bastante na administração do servidor, inspeção de arquivos,
+execução de scripts e compilação de dependências nativas quando isso for
+necessário.
 
 Se você estiver configurando mais de uma VPS, repita estes comandos em todas
 elas.
@@ -495,8 +495,8 @@ Esses comandos fazem o seguinte:
   automaticamente às confirmações.
 
 Observação importante: o `-y` em `apt update -y` normalmente é desnecessário,
-porque esse comando não costuma pedir confirmação. Mesmo assim, estou mantendo
-o comando aqui exatamente na forma em que ele foi executado.
+porque esse comando não costuma pedir confirmação. Mesmo assim, estou mantendo o
+comando aqui exatamente na forma em que ele foi executado.
 
 O resultado esperado é que a VPS receba correções de segurança, atualizações de
 pacotes já instalados e metadados mais recentes dos repositórios.
@@ -541,9 +541,9 @@ Esse comando faz o seguinte:
 - `set-timezone` informa que você quer definir o fuso horário.
 - `"$TIMEZONE"` reutiliza o valor salvo anteriormente na variável.
 
-O resultado esperado é que o sistema passe a usar o fuso horário configurado,
-o que ajuda na leitura de logs, agendamentos, timestamps e administração geral
-da VPS.
+O resultado esperado é que o sistema passe a usar o fuso horário configurado, o
+que ajuda na leitura de logs, agendamentos, timestamps e administração geral da
+VPS.
 
 Se quiser conferir depois, você pode executar:
 
@@ -762,8 +762,8 @@ Se houver erro de sintaxe ou conflito de configuração, esse comando deve
 informar o problema. Nesse caso, não reinicie o serviço ainda. Corrija o erro
 primeiro.
 
-O resultado esperado, quando está tudo certo, é não aparecer nenhuma mensagem
-de erro.
+O resultado esperado, quando está tudo certo, é não aparecer nenhuma mensagem de
+erro.
 
 ### Reiniciando o serviço SSH
 
@@ -878,14 +878,19 @@ backend = systemd
 ignoreip = ${FAIL2BAN_IGNOREIP}
 
 # Regras de banimento
-maxretry = 5          # 5 tentativas falhas
-findtime = 10m        # dentro de 10 minutos
-bantime = 1h          # = Banido por 1 hora
+# 5 tentativas falhas
+maxretry = 5
+# dentro de 10 minutos
+findtime = 10m
+# = Banido por 1 hora
+bantime = 1h
 
 # Banimento progressivo para reincidentes
 bantime.increment = true
-bantime.factor = 2    # Dobra o tempo a cada reincidência
-bantime.max = 24h     # Até o máximo de 24h
+# Dobra o tempo a cada reincidência
+bantime.factor = 2
+# Até o máximo de 24h
+bantime.max = 24h
 EOF
 ```
 
@@ -923,9 +928,10 @@ Esse comando faz o seguinte:
 Depois disso, o esperado é que o Fail2Ban passe a monitorar o SSH com as regras
 definidas em `jail.local`.
 
-Se quiser conferir o status logo depois, você pode usar `sudo systemctl status fail2ban`
-ou `sudo fail2ban-client status sshd`. Não é obrigatório para seguir o guia, mas
-ajuda bastante quando você ainda está pegando confiança com a ferramenta.
+Se quiser conferir o status logo depois, você pode usar
+`sudo systemctl status fail2ban` ou `sudo fail2ban-client status sshd`. Não é
+obrigatório para seguir o guia, mas ajuda bastante quando você ainda está
+pegando confiança com a ferramenta.
 
 ---
 
@@ -1009,8 +1015,8 @@ Esse comando faz o seguinte:
 - `proto udp` limita a regra ao protocolo UDP.
 - `comment "WireGuard"` adiciona uma descrição para a regra.
 
-Na prática, essa regra deixa a porta `51820/udp` acessível pela internet. Isso
-é comum quando você pretende usar WireGuard e clientes externos precisam chegar
+Na prática, essa regra deixa a porta `51820/udp` acessível pela internet. Isso é
+comum quando você pretende usar WireGuard e clientes externos precisam chegar
 até a VPS por essa porta.
 
 Se você não for usar WireGuard, não precisa liberar essa porta.
@@ -1419,8 +1425,9 @@ evita configuração extra de SSH só para fazer `git pull`, `git fetch` e outro
 comandos do Git dentro da VPS.
 
 Mas atenção: isso só é seguro se você ainda não tiver uma chave importante em
-`~/.ssh/id_ed25519`. Se esse arquivo já existir e você não quiser sobrescrevê-lo,
-pare aqui e gere a chave com outro nome usando `ssh-keygen -t ed25519 -f CAMINHO_DA_CHAVE`.
+`~/.ssh/id_ed25519`. Se esse arquivo já existir e você não quiser
+sobrescrevê-lo, pare aqui e gere a chave com outro nome usando
+`ssh-keygen -t ed25519 -f CAMINHO_DA_CHAVE`.
 
 O resultado esperado é a criação de dois arquivos no diretório `~/.ssh` do
 usuário atual:
@@ -1498,9 +1505,9 @@ repositório, por exemplo `git@github.com:SEU_USUARIO/SEU_REPOSITORIO.git`.
 O resultado esperado é que os arquivos do projeto apareçam diretamente dentro de
 `/opt/lgtm1`.
 
-Na primeira conexão com o GitHub por SSH, é normal aparecer uma pergunta
-pedindo para confiar na fingerprint do host. Leia com atenção e confirme apenas
-se o host exibido realmente for `github.com`.
+Na primeira conexão com o GitHub por SSH, é normal aparecer uma pergunta pedindo
+para confiar na fingerprint do host. Leia com atenção e confirme apenas se o
+host exibido realmente for `github.com`.
 
 ### Instalando uma versão mais nova do `just`
 
@@ -1520,9 +1527,9 @@ Esses comandos fazem o seguinte:
 - `apt install -y snapd` instala o suporte ao Snap
 - `systemctl enable --now snapd.socket` habilita e inicia o socket do Snap
 
-Em muitas imagens Ubuntu isso já vem pronto, então talvez você nem precise
-desse passo. Se, mesmo assim, o comando `snap` continuar indisponível logo após
-a instalação, faça logout e login novamente ou reinicie a VPS.
+Em muitas imagens Ubuntu isso já vem pronto, então talvez você nem precise desse
+passo. Se, mesmo assim, o comando `snap` continuar indisponível logo após a
+instalação, faça logout e login novamente ou reinicie a VPS.
 
 ```bash
 sudo snap install just --classic
@@ -1647,9 +1654,9 @@ Na prática, isso gera um volume controlado de requests contra o endpoint
 `/unstable`. Como esse endpoint escolhe o resultado aleatoriamente, o tráfego
 parece mais orgânico do que uma sequência fixa de cenários.
 
-Se `API_BASE_URL` estiver errado, a recipe falha logo no começo com uma
-mensagem clara, em vez de ficar silenciosamente tentando enviar tráfego para o
-lugar errado.
+Se `API_BASE_URL` estiver errado, a recipe falha logo no começo com uma mensagem
+clara, em vez de ficar silenciosamente tentando enviar tráfego para o lugar
+errado.
 
 ### Gerando tráfego determinístico para demonstrações repetíveis
 
@@ -1673,8 +1680,8 @@ Pelo `Justfile`, ela faz o seguinte por padrão:
   - `API_BASE_URL/scenario?mode=error`
 
 Na prática, isso cria um padrão previsível. É a melhor opção quando você quer
-gravar a tela, comparar dashboards ou repetir a mesma demonstração várias
-vezes sem depender do acaso.
+gravar a tela, comparar dashboards ou repetir a mesma demonstração várias vezes
+sem depender do acaso.
 
 ### Gerando caos para testar alertas
 
@@ -1691,8 +1698,7 @@ Pelo `Justfile`, ela faz o seguinte por padrão:
 - verifica primeiro se `API_BASE_URL/health` está respondendo
 - executa `90` rodadas
 - espera `0.1` segundo entre uma rodada e outra
-- em cada rodada, envia três requisições para
-  `API_BASE_URL/scenario?mode=error`
+- em cada rodada, envia três requisições para `API_BASE_URL/scenario?mode=error`
 - em seguida, envia uma requisição para
   `API_BASE_URL/scenario?mode=slow&delay_ms=2000`
 
@@ -1706,14 +1712,15 @@ anomalias e os alertas configurados no Grafana possam disparar.
 
 ### Resumo prático dessas três recipes
 
-- `just traffic-prod` gera tráfego aleatório via `/unstable` para popular dashboards
+- `just traffic-prod` gera tráfego aleatório via `/unstable` para popular
+  dashboards
 - `just traffic-scenarios-prod` gera um ciclo determinístico de `ok`, `warn`,
   `slow` e `error`
 - `just chaos-prod` gera erros e lentidão de propósito para testar alertas
 
 As três recipes são úteis, mas têm objetivos diferentes. A primeira serve mais
 para visualização orgânica e volume básico. A segunda serve para demonstração
-repetível. A terceira serve para falha, incidente e observabilidade em
-condições degradadas.
+repetível. A terceira serve para falha, incidente e observabilidade em condições
+degradadas.
 
 ---
