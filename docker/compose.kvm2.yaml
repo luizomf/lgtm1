@@ -16,7 +16,7 @@ services:
       - --entrypoints.websecure.address=:443
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
-      - --certificatesresolvers.le.acme.email=luizomf@gmail.com
+      - --certificatesresolvers.le.acme.email=${ACME_EMAIL:?Set ACME_EMAIL in .env}
       - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
       - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
       - --log.level=INFO
@@ -41,7 +41,7 @@ services:
       - OTEL_SERVICE_NAME=lgtm-demo-api
     labels:
       - traefik.enable=true
-      - traefik.http.routers.api.rule=Host(`api.inprod.cloud`)
+      - traefik.http.routers.api.rule=Host(`${API_DOMAIN:?Set API_DOMAIN in .env}`)
       - traefik.http.routers.api.entrypoints=websecure
       - traefik.http.routers.api.tls=true
       - traefik.http.routers.api.tls.certresolver=le
@@ -64,7 +64,7 @@ services:
     hostname: grafana
     image: grafana/grafana:12.4.0
     ports:
-      - 10.100.0.2:3000:3000
+      - ${GRAFANA_BIND_IP:-10.100.0.2}:${GRAFANA_BIND_PORT:-3000}:3000
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWD:-admin}

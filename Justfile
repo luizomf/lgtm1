@@ -6,8 +6,9 @@ compose_file := "docker/compose.yaml"
 compose_prod_file := "docker/compose.kvm2.yaml"
 env_file := ".env"
 
-grafana_domain := 'lgtm.inprod.cloud'
-api_domain := 'api.inprod.cloud'
+grafana_domain := env('GRAFANA_DOMAIN', 'grafana.example.com')
+api_domain := env('API_DOMAIN', 'api.example.com')
+api_base_url := env('API_BASE_URL', 'https://api.example.com')
 
 GRAFANA_USER := env('GRAFANA_USER', 'admin')
 GRAFANA_PASSWD := env('GRAFANA_PASSWD', 'admin')
@@ -189,12 +190,16 @@ deploy *ARGS:
 # Generate mixed request traffic for dashboards
 [group('prod')]
 traffic-prod rounds="30" sleep_seconds="0.2":
-  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "https://{{ api_domain }}/unstable" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
+  #!/bin/bash
+  curl -fsS "{{ api_base_url }}/health" > /dev/null || { echo "API healthcheck failed at {{ api_base_url }}/health. Check API_BASE_URL and your deploy."; exit 1; }
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "{{ api_base_url }}/unstable" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
 
 # Generate deterministic scenario traffic
 [group('prod')]
 traffic-scenarios-prod rounds="10" sleep_seconds="0.2":
-  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "https://{{ api_domain }}/scenario?mode=ok" > /dev/null 2>&1 || true; curl -fsS "https://{{ api_domain }}/scenario?mode=warn" > /dev/null 2>&1 || true; curl -fsS "https://{{ api_domain }}/scenario?mode=slow&delay_ms=600" > /dev/null 2>&1 || true; curl -fsS "https://{{ api_domain }}/scenario?mode=error" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
+  #!/bin/bash
+  curl -fsS "{{ api_base_url }}/health" > /dev/null || { echo "API healthcheck failed at {{ api_base_url }}/health. Check API_BASE_URL and your deploy."; exit 1; }
+  seq 1 {{ rounds }} | xargs -I{} -n1 sh -c 'curl -fsS "{{ api_base_url }}/scenario?mode=ok" > /dev/null 2>&1 || true; curl -fsS "{{ api_base_url }}/scenario?mode=warn" > /dev/null 2>&1 || true; curl -fsS "{{ api_base_url }}/scenario?mode=slow&delay_ms=600" > /dev/null 2>&1 || true; curl -fsS "{{ api_base_url }}/scenario?mode=error" > /dev/null 2>&1 || true; sleep {{ sleep_seconds }}'
 
 # 🔥 Trigger alert demo: flood errors + slow requests to fire both alerts
 [group('demo')]
@@ -214,12 +219,13 @@ chaos rounds="90" sleep_seconds="0.1":
 [group('prod')]
 chaos-prod rounds="90" sleep_seconds="0.1":
   #!/bin/bash
+  curl -fsS "{{ api_base_url }}/health" > /dev/null || { echo "API healthcheck failed at {{ api_base_url }}/health. Check API_BASE_URL and your deploy."; exit 1; }
   echo "🔥 Chaos mode (prod): sending errors + slow requests..."
   seq 1 {{ rounds }} | xargs -I{} -n1 sh -c '\
-    curl -fsS "https://{{ api_domain }}/scenario?mode=error" > /dev/null 2>&1 || true; \
-    curl -fsS "https://{{ api_domain }}/scenario?mode=error" > /dev/null 2>&1 || true; \
-    curl -fsS "https://{{ api_domain }}/scenario?mode=error" > /dev/null 2>&1 || true; \
-    curl -fsS "https://{{ api_domain }}/scenario?mode=slow&delay_ms=2000" > /dev/null 2>&1 || true; \
+    curl -fsS "{{ api_base_url }}/scenario?mode=error" > /dev/null 2>&1 || true; \
+    curl -fsS "{{ api_base_url }}/scenario?mode=error" > /dev/null 2>&1 || true; \
+    curl -fsS "{{ api_base_url }}/scenario?mode=error" > /dev/null 2>&1 || true; \
+    curl -fsS "{{ api_base_url }}/scenario?mode=slow&delay_ms=2000" > /dev/null 2>&1 || true; \
     sleep {{ sleep_seconds }}'
   echo "✅ Done. Check Grafana Alerting."
 
@@ -237,8 +243,9 @@ calm rounds="60" sleep_seconds="0.1":
 [group('prod')]
 calm-prod rounds="60" sleep_seconds="0.1":
   #!/bin/bash
+  curl -fsS "{{ api_base_url }}/health" > /dev/null || { echo "API healthcheck failed at {{ api_base_url }}/health. Check API_BASE_URL and your deploy."; exit 1; }
   echo "🕊️ Calm mode (prod): sending only healthy requests..."
   seq 1 {{ rounds }} | xargs -I{} -n1 sh -c '\
-    curl -fsS "https://{{ api_domain }}/scenario?mode=ok" > /dev/null 2>&1 || true; \
+    curl -fsS "{{ api_base_url }}/scenario?mode=ok" > /dev/null 2>&1 || true; \
     sleep {{ sleep_seconds }}'
   echo "✅ Done. Alerts should resolve soon."

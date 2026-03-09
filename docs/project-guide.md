@@ -462,28 +462,29 @@ This profile is tuned for:
 Topology:
 
 - public Traefik on `80/443`
-- private Grafana on `10.100.0.2:3000`
+- private Grafana on `${GRAFANA_BIND_IP}:${GRAFANA_BIND_PORT}`
 - internal-only Loki, Tempo, Mimir, Alloy, and node-exporter
 
 Deploy:
 
 ```bash
-docker compose -f docker/compose.kvm2.yaml up -d --build
+docker compose -f docker/compose.kvm2.yaml --env-file .env up -d --build
 ```
 
 Validation:
 
 ```bash
-curl -kfsS -H 'Host: api.inprod.cloud' https://127.0.0.1/health
+source .env
+curl -kfsS -H "Host: $API_DOMAIN" https://127.0.0.1/health
 ss -ltnp | grep -E '(:80|:443|:3000)'
-docker compose -f /opt/lgtm1/docker/compose.kvm2.yaml ps
+docker compose -f /opt/lgtm1/docker/compose.kvm2.yaml --env-file /opt/lgtm1/.env ps
 ```
 
 Expected:
 
 - `:80` on `0.0.0.0`
 - `:443` on `0.0.0.0`
-- `:3000` on `10.100.0.2`
+- `:3000` on the IP configured in `GRAFANA_BIND_IP`
 - all services `Up`
 
 Optional alert bootstrap on VPS:
@@ -532,7 +533,8 @@ docker ps --format 'table {{.Names}}\t{{.Ports}}'
 ### TLS
 
 ```bash
-echo | openssl s_client -servername api.inprod.cloud -connect api.inprod.cloud:443 2>/dev/null | openssl x509 -noout -issuer -subject -dates
+source .env
+echo | openssl s_client -servername "$API_DOMAIN" -connect "${API_DOMAIN}:443" 2>/dev/null | openssl x509 -noout -issuer -subject -dates
 ```
 
 ### WireGuard
@@ -586,13 +588,14 @@ Check:
 
 Expected profile:
 
-- Grafana bound to `10.100.0.2:3000`
+- Grafana bound to `${GRAFANA_BIND_IP}:${GRAFANA_BIND_PORT}`
 - no public `3000`
 
 ### HTTPS certificate not issuing
 
 ```bash
-dig +short api.inprod.cloud
+source .env
+dig +short "$API_DOMAIN"
 docker logs traefik --tail 200
 ```
 
