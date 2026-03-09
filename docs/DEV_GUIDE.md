@@ -8,6 +8,14 @@ Use este guia para aplicar os comandos passo a passo no seu próprio servidor.
 Estou usando o [KVM 2 da Hostinger](https://hostinger.com/otaviomiranda), mas
 isso deve funcionar em qualquer servidor.
 
+Antes de começar, três combinados importantes:
+
+- a ordem dos passos importa; siga de cima para baixo
+- quando um comando tiver valores de exemplo, troque apenas o valor, não a
+  estrutura do comando
+- salvo quando eu avisar o contrário, os comandos estão sendo executados na
+  VPS; no começo deles, você ainda estará como `root`
+
 **WIP: o trecho abaixo será substituído quando o vídeo for gravado.**
 
 ```md
@@ -86,6 +94,11 @@ acontece rápido, mas também pode levar mais tempo, dependendo do TTL e do
 provedor. O resultado esperado é que o seu domínio, ou o subdomínio escolhido,
 comece a resolver para o IP da sua VPS.
 
+Se você quiser uma checagem simples antes de continuar, o ideal é confirmar que
+o domínio já resolve para o IP correto. Se o domínio ainda estiver apontando
+para outro lugar, etapas mais adiante, como TLS automático com Let's Encrypt,
+podem falhar mesmo que o restante da configuração esteja certo.
+
 ---
 
 ## Configurações iniciais
@@ -108,6 +121,10 @@ valida se o domínio realmente pertence a você, ou se ele já aponta para a VPS
 e então pode aplicar essa configuração automaticamente no sistema. Se essa
 validação funcionar no seu caso, você pode usar o painel em vez do comando
 `hostnamectl`.
+
+Até o final desta parte de preparação inicial, considere que os comandos estão
+sendo executados como `root`. Mais adiante, quando a chave SSH estiver pronta,
+o fluxo passa para o seu usuário administrativo.
 
 ### Definindo o hostname do servidor
 
@@ -302,6 +319,10 @@ permitindo verificar se a conta foi criada corretamente.
 Se tudo der certo, você já terá um usuário próprio para continuar a
 configuração da VPS com mais segurança.
 
+Se quiser voltar para o `root` nesse terminal depois do teste, use `exit`.
+Daqui em diante, o fluxo ideal é seguir usando o seu usuário administrativo e
+prefixar com `sudo` apenas o que realmente exigir privilégio elevado.
+
 ---
 
 ## Configurando acesso SSH com chave
@@ -402,7 +423,7 @@ ssh kvm2
 O resultado esperado é que você consiga entrar na VPS usando apenas o apelido
 definido no arquivo `~/.ssh/config`.
 
-### Atualizando os pacotes do sistema
+### Fazendo a primeira atualização já pela nova sessão SSH
 
 Depois de configurar o acesso SSH, atualize os pacotes instalados na VPS:
 
@@ -422,6 +443,11 @@ O resultado esperado é que a VPS instale atualizações de segurança, correç�
 versões mais recentes dos pacotes já presentes no sistema.
 
 Dependendo do estado da máquina, esse processo pode levar alguns minutos.
+
+Não estranhe se comandos de atualização aparecerem de novo no guia. Isso
+aconteceu de fato no fluxo original e, em alguns pontos, foi útil para garantir
+que o sistema e os repositórios estivessem no estado esperado antes de instalar
+novos componentes.
 
 ---
 
@@ -535,6 +561,10 @@ Se você pretende trabalhar com repositórios Git diretamente na VPS, vale a pen
 configurar seu nome, seu e-mail e alguns padrões globais logo no início. Isso
 evita commits com identidade incorreta e ajuda a manter consistência no
 comportamento do Git dentro do servidor.
+
+Se a sua VPS vai servir apenas para deploy e leitura do repositório, esta parte
+é opcional. Ainda assim, estou mantendo os comandos porque eles fizeram parte do
+setup original.
 
 ### Definindo nome e e-mail em variáveis
 
@@ -714,7 +744,9 @@ O efeito prático dessas diretivas é:
 
 Importante: se você realmente precisar de túneis SSH, `agent forwarding` ou
 algum tipo de redirecionamento de portas no futuro, terá de revisar essas
-diretivas antes.
+diretivas antes. Neste guia isso é aceitável porque o acesso ao GitHub será
+feito com uma chave criada no próprio servidor, sem depender de encaminhamento
+do agente SSH da sua máquina local.
 
 ### Validando a configuração antes de reiniciar
 
@@ -890,6 +922,10 @@ Esse comando faz o seguinte:
 
 Depois disso, o esperado é que o Fail2Ban passe a monitorar o SSH com as regras
 definidas em `jail.local`.
+
+Se quiser conferir o status logo depois, você pode usar `sudo systemctl status fail2ban`
+ou `sudo fail2ban-client status sshd`. Não é obrigatório para seguir o guia, mas
+ajuda bastante quando você ainda está pegando confiança com a ferramenta.
 
 ---
 
@@ -1186,6 +1222,16 @@ O que precisa ser adaptado nessa edição manual:
 - `Endpoint` deve receber o IP público ou domínio da outra máquina, quando isso
   fizer sentido no seu cenário
 
+Depois de salvar esse arquivo, aplique permissão restrita:
+
+```bash
+sudo chmod 600 "$WG_CONF"
+```
+
+Isso é importante porque o arquivo contém a chave privada da interface
+WireGuard. Em um servidor real, esse arquivo não deve ficar legível para outros
+usuários do sistema.
+
 ### Sobre o uso de `Endpoint`
 
 Se o computador local ou o peer remoto tiver IP dinâmico, você pode omitir o
@@ -1326,6 +1372,10 @@ comandos do Docker sem prefixar tudo com `sudo`.
 Importante: essa alteração costuma exigir logout e login novamente, ou abertura
 de uma nova sessão SSH, para entrar em vigor.
 
+Se você tentar rodar `docker ps` na mesma sessão e receber erro de permissão,
+isso normalmente não significa que a instalação falhou. Na maioria dos casos,
+significa apenas que o grupo novo ainda não foi aplicado ao seu login atual.
+
 ### Conferindo a instalação
 
 ```bash
@@ -1439,6 +1489,10 @@ repositório, por exemplo `git@github.com:SEU_USUARIO/SEU_REPOSITORIO.git`.
 O resultado esperado é que os arquivos do projeto apareçam diretamente dentro de
 `/opt/lgtm1`.
 
+Na primeira conexão com o GitHub por SSH, é normal aparecer uma pergunta
+pedindo para confiar na fingerprint do host. Leia com atenção e confirme apenas
+se o host exibido realmente for `github.com`.
+
 ### Instalando uma versão mais nova do `just`
 
 Mais cedo, o `just` já havia sido instalado via `apt`, mas neste ponto foi feita
@@ -1534,6 +1588,11 @@ Antes de seguir, ajuste esses valores no arquivo `.env`:
 Evite deixar usuário, senha, domínio e e-mail com valores de exemplo em um
 servidor real exposto à internet.
 
+Ponto importante de segurança: evite usar `0.0.0.0` em `GRAFANA_BIND_IP` se a
+sua intenção for manter o Grafana privado. Neste projeto, a ideia é publicar a
+API para a internet, mas deixar o Grafana acessível apenas pela rede privada do
+WireGuard ou pelo próprio servidor.
+
 ### Executando o deploy
 
 ```bash
@@ -1552,8 +1611,11 @@ Na prática, este comando sobe a stack principal do projeto na VPS, incluindo a
 API de demonstração e os componentes de observabilidade.
 
 O resultado esperado é que os containers sejam criados e iniciados em segundo
-plano. Se quiser conferir depois, você pode usar `docker ps` ou as recipes do
-próprio projeto para verificar o estado dos serviços.
+plano. No primeiro deploy, também pode levar um pouco mais de tempo até o
+Traefik emitir o certificado TLS, porque isso depende de DNS correto e de as
+portas `80` e `443` já estarem acessíveis. Se quiser conferir depois, você pode
+usar `docker ps` ou as recipes do próprio projeto para verificar o estado dos
+serviços.
 
 ### Gerando tráfego normal para dashboards
 
@@ -1561,8 +1623,9 @@ próprio projeto para verificar o estado dos serviços.
 just traffic-prod
 ```
 
-Essa recipe serve para gerar tráfego de aplicação de forma simples e repetida,
-alimentando métricas, logs e traces para aparecerem nos dashboards.
+Essa recipe serve para gerar tráfego repetido contra o endpoint `/unstable`,
+alimentando métricas, logs e traces para aparecerem nos dashboards com um
+comportamento menos roteirizado.
 
 Pelo `Justfile`, ela faz o seguinte por padrão:
 
@@ -1572,12 +1635,37 @@ Pelo `Justfile`, ela faz o seguinte por padrão:
 - em cada rodada, faz uma requisição HTTP para `API_BASE_URL/unstable`
 
 Na prática, isso gera um volume controlado de requests contra o endpoint
-`/unstable`, o suficiente para popular visualizações do Grafana sem precisar
-esperar tráfego real de usuários.
+`/unstable`. Como esse endpoint escolhe o resultado aleatoriamente, o tráfego
+parece mais orgânico do que uma sequência fixa de cenários.
 
-Se `API_BASE_URL` estiver errado, a recipe agora falha logo no começo com uma
+Se `API_BASE_URL` estiver errado, a recipe falha logo no começo com uma
 mensagem clara, em vez de ficar silenciosamente tentando enviar tráfego para o
 lugar errado.
+
+### Gerando tráfego determinístico para demonstrações repetíveis
+
+```bash
+just traffic-scenarios-prod
+```
+
+Essa recipe é parecida com a anterior, mas em vez de deixar o endpoint
+`/unstable` decidir o resultado aleatoriamente, ela envia uma sequência fixa de
+cenários em cada rodada.
+
+Pelo `Justfile`, ela faz o seguinte por padrão:
+
+- verifica primeiro se `API_BASE_URL/health` está respondendo
+- executa `10` rodadas
+- espera `0.2` segundo entre uma rodada e outra
+- em cada rodada, envia:
+  - `API_BASE_URL/scenario?mode=ok`
+  - `API_BASE_URL/scenario?mode=warn`
+  - `API_BASE_URL/scenario?mode=slow&delay_ms=600`
+  - `API_BASE_URL/scenario?mode=error`
+
+Na prática, isso cria um padrão previsível. É a melhor opção quando você quer
+gravar a tela, comparar dashboards ou repetir a mesma demonstração várias
+vezes sem depender do acaso.
 
 ### Gerando caos para testar alertas
 
@@ -1607,13 +1695,16 @@ Na prática, isso força:
 O resultado esperado é que, depois de algum tempo, os dashboards mostrem essas
 anomalias e os alertas configurados no Grafana possam disparar.
 
-### Resumo prático dessas duas recipes
+### Resumo prático dessas três recipes
 
-- `just traffic-prod` gera tráfego misto e simples para popular dashboards
+- `just traffic-prod` gera tráfego aleatório via `/unstable` para popular dashboards
+- `just traffic-scenarios-prod` gera um ciclo determinístico de `ok`, `warn`,
+  `slow` e `error`
 - `just chaos-prod` gera erros e lentidão de propósito para testar alertas
 
-As duas recipes são úteis, mas têm objetivos diferentes. A primeira serve mais
-para visualização e volume básico. A segunda serve para demonstração de falha,
-incidente e observabilidade em condições degradadas.
+As três recipes são úteis, mas têm objetivos diferentes. A primeira serve mais
+para visualização orgânica e volume básico. A segunda serve para demonstração
+repetível. A terceira serve para falha, incidente e observabilidade em
+condições degradadas.
 
 ---
