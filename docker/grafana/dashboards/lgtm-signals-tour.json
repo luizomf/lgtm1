@@ -76,7 +76,7 @@
         "type": "prometheus",
         "uid": "mimir"
       },
-      "description": "Matches the part of the video where CPU usage is the simplest example of a metric trend.",
+      "description": "Shows host CPU usage as a simple example of a metric trend over time.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -326,8 +326,7 @@
   "style": "dark",
   "tags": [
     "education",
-    "lgtm",
-    "video"
+    "lgtm"
   ],
   "templating": {
     "list": []

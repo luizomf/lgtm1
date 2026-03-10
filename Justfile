@@ -9,8 +9,8 @@ local_api_base_url := "http://127.0.0.1:8000"
 
 # Change for your use cases
 grafana_domain := env('GRAFANA_DOMAIN', 'grafana.example.com')
-api_domain := env('API_DOMAIN', 'api.inprod.cloud')
-api_base_url := env('API_BASE_URL', 'https://api.inprod.cloud')
+api_domain := env('API_DOMAIN', 'api.example.com')
+api_base_url := env('API_BASE_URL', 'https://api.example.com')
 
 GRAFANA_USER := env('GRAFANA_USER', 'admin')
 GRAFANA_PASSWD := env('GRAFANA_PASSWD', 'admin')
