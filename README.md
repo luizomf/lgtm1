@@ -1,126 +1,93 @@
 # LGTM Demo Stack
 
-This repository is a local-first observability base built around the LGTM stack:
+Este repositório é uma base prática para estudar observabilidade com a stack
+LGTM. A ideia não é só subir Grafana, mas ter uma aplicação pequena que gera
+sinais úteis de propósito para você explorar logs, métricas, traces e alertas em
+um ambiente local e em uma VPS real.
 
-- `Loki` for logs
-- `Grafana` for visualization
-- `Tempo` for traces
-- `Mimir` for metrics
-- `Alloy` as the collector and router
-- `FastAPI` as the demo application that emits useful signals on purpose
+## O que tem aqui
 
-## Why this exists
+- `Loki` para logs
+- `Grafana` para visualização e investigação
+- `Tempo` para traces
+- `Mimir` para métricas
+- `Alloy` como coletor e roteador dos sinais
+- `FastAPI` como aplicação de demonstração
 
-The goal is not just to "run Grafana". The goal is to have a small application that
-can behave like a real system under stress so we can explain why observability
-matters, not only how to install tools.
-
-## Signal flow
+## Fluxo real dos sinais
 
 ### Logs
 
-The API writes logs to standard output. Docker exposes those logs, Alloy tails them
-from the Docker socket, and Alloy forwards them to Loki.
+A API escreve logs em `stdout`. O Docker expõe esses logs, o Alloy coleta tudo
+pela socket do Docker e encaminha para o Loki.
 
 `api -> stdout -> Docker -> Alloy -> Loki -> Grafana`
 
-### Metrics
+### Métricas
 
-The API emits OpenTelemetry metrics and Alloy also scrapes container + host metrics
-through cAdvisor and node_exporter. Alloy forwards all streams to Mimir.
+A API emite métricas com `OpenTelemetry`. Além disso, o Alloy coleta métricas do
+host e dos containers. Tudo vai para o Mimir.
 
 `api -> OTLP -> Alloy -> Mimir -> Grafana`
 
 `containers -> cAdvisor -> Alloy -> Mimir -> Grafana`
 
-`host (CPU/RAM/Disk/Network) -> node_exporter -> Alloy -> Mimir -> Grafana`
+`host -> node_exporter -> Alloy -> Mimir -> Grafana`
 
 ### Traces
 
-The API emits OpenTelemetry traces to Alloy through OTLP gRPC. Alloy forwards those
-traces to Tempo.
+A API envia traces com `OpenTelemetry` para o Alloy via `OTLP gRPC`. O Alloy
+encaminha esses traces para o Tempo.
 
 `api -> OTLP -> Alloy -> Tempo -> Grafana`
 
-## Local startup
+## Subindo localmente
 
-On a fresh clone, create your local env file first:
+Em um clone novo, crie primeiro o arquivo `.env`:
 
 ```bash
 cp .env.example .env
 ```
 
-The example file already contains the default Grafana credentials used by this
-demo, so this step is enough to unblock `just up`.
-
-```bash
-docker compose -f docker/compose.yaml up -d --build
-```
-
-Or use the shortcuts:
+Depois suba a stack:
 
 ```bash
 just up
-just smoke
-just traffic-scenarios 20 0.1
-just alert-demo 30 0.1
 ```
 
-Traffic helpers:
+Se quiser validar rapidamente:
+
+```bash
+just smoke
+just traffic-scenarios 20 0.1
+```
+
+## Recipes mais úteis
+
+### Tráfego e sinais
 
 - `just traffic 30 0.2`
-  Hits `/unstable` repeatedly to generate random observability signals.
+  Gera tráfego aleatório via `/unstable`.
 - `just traffic-scenarios 20 0.1`
-  Sends a deterministic `ok -> warn -> slow -> error` cycle for predictable demos.
+  Gera um ciclo determinístico de `ok -> warn -> slow -> error`.
 - `just chaos 90 0.1`
-  Floods errors and slow requests to push dashboards and alerts into a clear failure state.
+  Gera erros e lentidão de propósito para deixar dashboards e alertas bem visíveis.
 - `just calm 60 0.1`
-  Sends only healthy requests to help alerts recover.
+  Gera apenas tráfego saudável para ajudar alertas a se recuperarem.
 
-## Useful endpoints
-
-- API: [http://127.0.0.1:8000](http://127.0.0.1:8000)
-- Grafana: [http://127.0.0.1:3000](http://127.0.0.1:3000)
-- Alloy admin/metrics: [http://127.0.0.1:12345](http://127.0.0.1:12345)
-
-## Demo routes
-
-- `GET /health`
-- `GET /unstable`
-- `GET /scenario?mode=ok`
-- `GET /scenario?mode=warn`
-- `GET /scenario?mode=error`
-- `GET /scenario?mode=slow&delay_ms=1500`
-
-## Grafana login
-
-- User: `admin`
-- Password: `admin`
-
-Datasources for `Mimir`, `Loki`, and `Tempo` are provisioned automatically at startup.
-The `LGTM Signals Tour`, `LGTM Demo Overview`, `LGTM Flight Deck`, and `VPS Health` dashboards are also provisioned automatically.
-
-## Demo alert rule
-
-Load and validate the demo alert rule stored in `docker/mimir-rules/demo-api.yaml`:
+### Alertas locais
 
 ```bash
 just rules-load
 just rules-list
 just rules-state
-```
-
-To force traffic and watch state transitions in Grafana Alerting:
-
-```bash
 just alert-demo 30 0.1
 ```
 
-This helper loads the demo rules, runs alert-firing traffic, and then prints
-the current rule state.
+### Alertas na VPS
 
-On the VPS profile, use the production variants that talk to Mimir through the
-internal Docker network instead of a published host port:
+No perfil de VPS, as recipes de alertas conversam com o `mimir` pela rede
+interna do Docker, sem depender de uma porta pública:
 
 ```bash
 just rules-load-prod
@@ -129,21 +96,67 @@ just rules-state-prod
 just alert-demo-prod 30 0.1
 ```
 
-## Public vs private exposure (kvm2 profile)
+## Endpoints locais
 
-| Surface | Address/port | Visibility | Why |
+- API: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+- Grafana: [http://127.0.0.1:3000](http://127.0.0.1:3000)
+- Alloy admin/metrics: [http://127.0.0.1:12345](http://127.0.0.1:12345)
+
+## Rotas da API de demo
+
+- `GET /health`
+- `GET /unstable`
+- `GET /scenario?mode=ok`
+- `GET /scenario?mode=warn`
+- `GET /scenario?mode=error`
+- `GET /scenario?mode=slow&delay_ms=1500`
+
+## Dashboards provisionados
+
+Ao subir a stack, o Grafana já recebe automaticamente os datasources e estes
+dashboards:
+
+- `LGTM Signals Tour`
+- `LGTM Demo Overview`
+- `LGTM Flight Deck`
+- `VPS Health`
+
+Login padrão do Grafana no ambiente local:
+
+- Usuário: `admin`
+- Senha: `admin`
+
+## Local x VPS
+
+### Local
+
+- Grafana em `http://127.0.0.1:3000`
+- API em `http://127.0.0.1:8000`
+- ideal para aprender a stack e validar a instrumentação
+
+### VPS (`kvm2`)
+
+- API pública via Traefik em `80/443`
+- Grafana privado em `${GRAFANA_BIND_IP}:${GRAFANA_BIND_PORT}`
+- Loki, Tempo, Mimir e Alloy expostos apenas internamente
+- bom para estudar sinais mais realistas e deploy privado do Grafana via WireGuard
+
+## Superfícies públicas e privadas no perfil `kvm2`
+
+| Superfície | Endereço/porta | Visibilidade | Motivo |
 | --- | --- | --- | --- |
-| Traefik HTTP | `0.0.0.0:80` | Public | ACME HTTP challenge + redirect to HTTPS |
-| Traefik HTTPS | `0.0.0.0:443` | Public | Public ingress for API |
-| API app port | `8000` | Internal only | Accessed through Traefik service routing |
-| Grafana UI | `${GRAFANA_BIND_IP}:${GRAFANA_BIND_PORT}` | Private (recommended via WireGuard) | Admin surface, no public route |
-| Node exporter | `9100` | Internal only | Host metrics scraped by Alloy only |
-| Loki | `3100` | Internal only | Backend component |
-| Tempo | `3200` (service internal) | Internal only | Backend component |
-| Mimir | `9009` (service internal) | Internal only | Backend component |
-| WireGuard | `51820/udp` | Restricted peers | Private network transport |
+| Traefik HTTP | `0.0.0.0:80` | Pública | desafio ACME + redirecionamento para HTTPS |
+| Traefik HTTPS | `0.0.0.0:443` | Pública | entrada pública da API |
+| Porta da API | `8000` | Interna | acessada pelo Traefik |
+| Grafana UI | `${GRAFANA_BIND_IP}:${GRAFANA_BIND_PORT}` | Privada | superfície administrativa |
+| node-exporter | `9100` | Interna | métricas do host para o Alloy |
+| Loki | `3100` | Interna | backend |
+| Tempo | `3200` | Interna | backend |
+| Mimir | `9009` | Interna | backend |
+| WireGuard | `51820/udp` | Peers autorizados | rede privada |
 
-## More docs
+## Documentação complementar
 
-- [Project guide](./docs/project-guide.md)
-- [Dev guide](./docs/DEV_GUIDE.md)
+- [Guia técnico do projeto](./docs/project-guide.md)
+- [Guia completo da VPS](./docs/DEV_GUIDE.md)
+- [Guia rápido da VPS](./docs/DEV_GUIDE_SENIOR.md)

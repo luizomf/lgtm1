@@ -1,14 +1,13 @@
 # Guia para o desenvolvedor
 
-> **NOTA:** solicitei ao Codex para fazer uma explicação mais detalhada em cada
-> comando que usei. Espero que ajude ainda mais.
-
 Use este guia para aplicar os comandos passo a passo no seu próprio servidor. Se
 você só quer os comandos, sem explicações, use
 [DEV_GUIDE_SENIOR.md](./DEV_GUIDE_SENIOR.md).
 
-Estou usando o [KVM 2 da Hostinger](https://hostinger.com/otaviomiranda), mas
-isso deve funcionar em qualquer servidor.
+Este guia usa uma VPS Ubuntu como base. Se você quiser usar o mesmo provedor
+adotado neste laboratório, o [KVM 2 da Hostinger](https://hostinger.com/otaviomiranda)
+foi suficiente para rodar esta stack, mas qualquer VPS equivalente deve
+funcionar.
 
 Antes de começar, três combinados importantes:
 
@@ -18,30 +17,17 @@ Antes de começar, três combinados importantes:
 - salvo quando eu avisar o contrário, os comandos estão sendo executados na VPS;
   no começo deles, você ainda estará como `root`
 
-**WIP: o trecho abaixo será substituído quando o vídeo for gravado.**
+## Escolhendo uma VPS
 
-```md
-Também detalhei este processo em vídeo caso queira assistir:
+Você pode usar qualquer VPS compatível com Ubuntu e Docker. Para o perfil
+`kvm2` deste projeto, a referência usada foi uma máquina pequena, mas ainda
+capaz de rodar API, Grafana, Loki, Tempo, Mimir, Alloy e métricas do host sem
+entrar em sofrimento imediato.
 
-[![YouTube Video](http://img.youtube.com/vi/yxxEk68EDgo/hqdefault.jpg)](https://youtu.be/yxxEk68EDgo 'Crie seu próprio cloud em VPS')
-
-- Link: [https://youtu.be/yxxEk68EDgo](https://youtu.be/yxxEk68EDgo)
-```
-
----
-
-## Onde contratar um servidor?
-
-Se você busca um servidor **robusto, confiável e com preço imbatível**,
-recomendo o [KVM 2 da Hostinger](https://hostinger.com/otaviomiranda). Você pode
-escolher outros KVMs maiores ou menores conforme a necessidade. No entanto, o
-custo benefício do KVM 2 é o melhor (você vai perceber isso por conta própria).
-
-**Bônus Exclusivo:** Consegui **10% de desconto adicional** para vocês. Use os
-dados abaixo com planos de 12 meses (1 ano) ou 24 meses (2 anos).
-
-- [https://hostinger.com/otaviomiranda](https://hostinger.com/otaviomiranda)
-- Cupom: `OTAVIOMIRANDA`
+Se o seu provedor oferecer terminal web, domínio incluído no plano ou ajustes de
+hostname pelo painel, esses atalhos podem facilitar bastante a configuração
+inicial. Neste guia, esses recursos aparecem apenas como conveniência opcional,
+não como requisito.
 
 ---
 
@@ -52,15 +38,14 @@ domínio aponta para o IP público do servidor. Isso é importante porque, mais
 adiante, serviços como proxy reverso, HTTPS e certificados TLS dependem desse
 apontamento para funcionar corretamente.
 
-Se você estiver usando um VPS da Hostinger, verifique no painel se o seu plano
-inclui um domínio gratuito. Quando essa opção estiver disponível, faça o resgate
-do domínio primeiro. Depois que o domínio estiver registrado, abra a área de
-gerenciamento dele e procure a opção `DNS / Nameservers`.
+Se o seu provedor incluir domínio no plano, ou se você já tiver um domínio
+próprio, configure primeiro a zona DNS antes de seguir com proxy reverso,
+certificados e publicação da API.
 
-No meu caso, eu configurei os registros abaixo:
+Neste exemplo, os registros configurados foram estes:
 
-- Tipo: `A`, Nome: `*`, Prioridade: `0`, Conteúdo: `76.13.71.178`, TTL: `14400`
-- Tipo: `A`, Nome: `@`, Prioridade: `0`, Conteúdo: `76.13.71.178`, TTL: `60`
+- Tipo: `A`, Nome: `*`, Prioridade: `0`, Conteúdo: `203.0.113.10`, TTL: `14400`
+- Tipo: `A`, Nome: `@`, Prioridade: `0`, Conteúdo: `203.0.113.10`, TTL: `60`
 
 Esses valores funcionam assim:
 
@@ -72,7 +57,7 @@ Esses valores funcionam assim:
 - `Conteúdo` é o IP público da sua VPS.
 - `TTL` é o tempo de cache da resposta DNS.
 
-No seu caso, você deve trocar o IP `76.13.71.178` pelo IP público real da sua
+No seu caso, você deve trocar o IP `203.0.113.10` pelo IP público real da sua
 VPS. Esse IP muda de servidor para servidor.
 
 Também é importante não sair alterando todos os registros DNS da zona. Em muitos
@@ -111,18 +96,13 @@ não é uma boa ideia manter esse fluxo como acesso principal no dia a dia. Mesm
 assim, neste começo ele ajuda bastante, porque ainda não configuramos usuário
 próprio, chave SSH e demais ajustes de segurança.
 
-Se você estiver usando a Hostinger, existe um atalho muito útil para essa etapa.
-No hPanel, dentro da tela de gerenciamento da VPS, há um botão chamado
-`Terminal` no canto superior direito. Esse botão abre um terminal web já
-autenticado como `root`, sem exigir senha nem chave SSH configurada. Isso
-facilita bastante as primeiras alterações no sistema operacional.
+Se o seu provedor oferecer um terminal web no painel, esse recurso pode ajudar
+nas primeiras alterações do sistema operacional, especialmente antes de você ter
+configurado chave SSH e usuário administrativo.
 
-Se preferir, a Hostinger também oferece uma alternativa no próprio painel para
-configurar o hostname. Em `VPS > Configurações > Configurações de VPS`, o painel
-valida se o domínio realmente pertence a você, ou se ele já aponta para a VPS, e
-então pode aplicar essa configuração automaticamente no sistema. Se essa
-validação funcionar no seu caso, você pode usar o painel em vez do comando
-`hostnamectl`.
+Alguns provedores também permitem ajustar o hostname pelo painel. Se essa opção
+existir e a validação funcionar no seu caso, você pode usá-la em vez de aplicar
+o hostname manualmente com `hostnamectl`.
 
 Até o final desta parte de preparação inicial, considere que os comandos estão
 sendo executados como `root`. Mais adiante, quando a chave SSH estiver pronta, o
@@ -137,7 +117,7 @@ confusão quando você tiver mais de um servidor.
 Execute o comando abaixo:
 
 ```bash
-hostnamectl set-hostname kvm2
+hostnamectl set-hostname vps1
 ```
 
 Esse comando faz o seguinte:
@@ -145,9 +125,9 @@ Esse comando faz o seguinte:
 - `hostnamectl` é a ferramenta usada para consultar e alterar o hostname do
   sistema.
 - `set-hostname` informa que você quer definir um novo nome para o servidor.
-- `kvm2` é o hostname escolhido neste exemplo.
+- `vps1` é o hostname escolhido neste exemplo.
 
-No seu caso, você deve trocar `kvm2` pelo nome que quiser usar para a sua VPS.
+No seu caso, você deve trocar `vps1` pelo nome que quiser usar para a sua VPS.
 Escolha um nome simples, curto e fácil de reconhecer.
 
 Depois disso, ajuste o arquivo `/etc/hosts` para associar corretamente o nome da
@@ -169,25 +149,25 @@ O objetivo aqui é localizar a linha `127.0.1.1` ou outra linha equivalente que
 represente o hostname local da máquina, e alterá-la para algo assim:
 
 ```text
-127.0.1.1       kvm2.inprod.cloud       kvm2
+127.0.1.1       vps1.example.com       vps1
 ```
 
 Essa linha faz o seguinte:
 
 - `127.0.1.1` é um endereço local usado pelo sistema para resolver o hostname da
   própria máquina.
-- `kvm2.inprod.cloud` é o nome completo do host, também chamado de FQDN
+- `vps1.example.com` é o nome completo do host, também chamado de FQDN
   (`Fully Qualified Domain Name`).
-- `kvm2` é o nome curto da máquina.
+- `vps1` é o nome curto da máquina.
 
 No seu caso, você precisa adaptar duas partes:
 
-- troque `kvm2` pelo hostname escolhido para o seu servidor
-- troque `inprod.cloud` pelo seu domínio real
+- troque `vps1` pelo hostname escolhido para o seu servidor
+- troque `example.com` pelo seu domínio real
 
-No meu exemplo, `inprod.cloud` foi o domínio gratuito que registrei junto com a
-VPS. Se você estiver usando outro domínio, ou outro provedor, use os valores
-correspondentes ao seu ambiente.
+Neste exemplo, `example.com` representa o seu domínio real. Se você estiver
+usando outro provedor, ou outro domínio, use os valores correspondentes ao seu
+ambiente.
 
 O resultado esperado é que o servidor passe a se identificar corretamente com o
 nome curto e com o nome completo, o que ajuda em ferramentas do sistema,
@@ -215,16 +195,16 @@ administrativos.
 Antes de criar o usuário, defini uma variável com o nome desejado:
 
 ```bash
-export YOUR_USERNAME="luizotavio"
+export YOUR_USERNAME="adminuser"
 ```
 
 Esse comando faz o seguinte:
 
 - `export` cria uma variável de ambiente disponível na sessão atual do shell.
 - `YOUR_USERNAME` é o nome da variável.
-- `"luizotavio"` é o valor definido para ela.
+- `"adminuser"` é o valor definido para ela.
 
-No seu caso, você deve trocar `luizotavio` pelo nome do usuário que deseja criar
+No seu caso, você deve trocar `adminuser` pelo nome do usuário que deseja criar
 na VPS.
 
 Definir essa variável não é obrigatório, mas ajuda a reutilizar o mesmo nome nos
@@ -338,20 +318,20 @@ Os comandos abaixo foram executados no computador local, e não dentro da VPS.
 ### Gerando uma chave SSH no computador local
 
 ```bash
-ssh-keygen -t ed25519 -f ~/.ssh/id_hostinger -C "USUARIO"
+ssh-keygen -t ed25519 -f ~/.ssh/id_vps -C "USUARIO"
 ```
 
 Esse comando faz o seguinte:
 
 - `ssh-keygen` gera um novo par de chaves SSH.
 - `-t ed25519` define o algoritmo da chave como `ed25519`.
-- `-f ~/.ssh/id_hostinger` define o caminho e o nome do arquivo da chave.
+- `-f ~/.ssh/id_vps` define o caminho e o nome do arquivo da chave.
 - `-C "USUARIO"` adiciona um comentário à chave para facilitar identificação.
 
 O resultado esperado é a criação de dois arquivos no seu computador local:
 
-- `~/.ssh/id_hostinger`
-- `~/.ssh/id_hostinger.pub`
+- `~/.ssh/id_vps`
+- `~/.ssh/id_vps.pub`
 
 No seu caso, adapte o comentário `"USUARIO"` como preferir. Ele não interfere na
 autenticação, mas ajuda a identificar a chave depois.
@@ -359,13 +339,13 @@ autenticação, mas ajuda a identificar a chave depois.
 ### Copiando a chave pública para a VPS
 
 ```bash
-ssh-copy-id -i ~/.ssh/id_hostinger.pub USUARIO@IP_OU_HOST_DO_VPS
+ssh-copy-id -i ~/.ssh/id_vps.pub USUARIO@IP_OU_HOST_DO_VPS
 ```
 
 Esse comando faz o seguinte:
 
 - `ssh-copy-id` envia sua chave pública para o servidor remoto.
-- `-i ~/.ssh/id_hostinger.pub` informa qual chave pública será copiada.
+- `-i ~/.ssh/id_vps.pub` informa qual chave pública será copiada.
 - `USUARIO@IP_OU_HOST_DO_VPS` informa o usuário remoto e o endereço da VPS.
 
 Depois de executar esse comando, digite a senha do usuário quando o sistema
@@ -388,38 +368,38 @@ Depois disso, no seu computador local, abra o arquivo `~/.ssh/config` e adicione
 uma entrada como esta:
 
 ```sshconfig
-Host kvm2
+Host my-vps
   IgnoreUnknown AddKeysToAgent,UseKeychain
   AddKeysToAgent yes
-  HostName inprod.cloud
-  User luizotavio
+  HostName vps1.example.com
+  User adminuser
   Port 22
-  IdentityFile ~/.ssh/id_hostinger
+  IdentityFile ~/.ssh/id_vps
 ```
 
 Esse bloco faz o seguinte:
 
-- `Host kvm2` cria um apelido para a conexão.
+- `Host my-vps` cria um apelido para a conexão.
 - `IgnoreUnknown AddKeysToAgent,UseKeychain` evita erro em ambientes onde essas
   opções não existirem.
 - `AddKeysToAgent yes` adiciona a chave ao agente SSH quando ela for usada.
-- `HostName inprod.cloud` define o endereço real do servidor.
-- `User luizotavio` define o usuário remoto.
+- `HostName vps1.example.com` define o endereço real do servidor.
+- `User adminuser` define o usuário remoto.
 - `Port 22` define a porta SSH usada na conexão.
-- `IdentityFile ~/.ssh/id_hostinger` informa qual chave privada usar.
+- `IdentityFile ~/.ssh/id_vps` informa qual chave privada usar.
 
 No seu caso, você deve adaptar:
 
-- `kvm2` para o apelido que quiser usar localmente
-- `inprod.cloud` para o domínio, subdomínio ou IP da sua VPS
-- `luizotavio` para o nome do seu usuário remoto
-- `~/.ssh/id_hostinger` para o caminho da sua chave, caso você tenha usado outro
+- `my-vps` para o apelido que quiser usar localmente
+- `vps1.example.com` para o domínio, subdomínio ou IP da sua VPS
+- `adminuser` para o nome do seu usuário remoto
+- `~/.ssh/id_vps` para o caminho da sua chave, caso você tenha usado outro
   nome
 
 Depois disso, o acesso pode ser feito com um comando muito mais simples:
 
 ```bash
-ssh kvm2
+ssh my-vps
 ```
 
 O resultado esperado é que você consiga entrar na VPS usando apenas o apelido
@@ -539,8 +519,8 @@ setup original.
 ### Definindo nome e e-mail em variáveis
 
 ```bash
-export GIT_USERNAME="luizomf"
-export GIT_EMAIL="luizomf@gmail.com"
+export GIT_USERNAME="YOUR_GIT_NAME"
+export GIT_EMAIL="you@example.com"
 ```
 
 Esses comandos fazem o seguinte:
@@ -549,7 +529,8 @@ Esses comandos fazem o seguinte:
 - `GIT_USERNAME` armazena o nome que será usado pelo Git.
 - `GIT_EMAIL` armazena o e-mail que será usado pelo Git.
 
-No seu caso, troque `luizomf` e `luizomf@gmail.com` pelos seus próprios dados.
+No seu caso, troque `YOUR_GIT_NAME` e `you@example.com` pelos seus próprios
+dados.
 
 ### Configurando nome e e-mail globais do Git
 
@@ -627,7 +608,7 @@ Antes de continuar:
 
 - confirme que você já consegue entrar com sucesso usando sua chave SSH
 - mantenha a sessão atual aberta enquanto testa a nova configuração
-- se estiver usando Hostinger, o terminal web do hPanel pode servir como acesso
+- se o seu provedor tiver terminal web, ele pode servir como acesso
   de emergência caso algo dê errado
 
 ### Garantindo a instalação do servidor SSH
@@ -798,19 +779,19 @@ Antes de instalar e configurar o Fail2Ban, defini variáveis com o IP
 administrativo que não deve ser banido:
 
 ```bash
-export ADMIN_SSH_CIDR="187.108.118.25/32"
+export ADMIN_SSH_CIDR="203.0.113.10/32"
 export FAIL2BAN_IGNOREIP="$ADMIN_SSH_CIDR 127.0.0.1/8 ::1"
 ```
 
 Esses comandos fazem o seguinte:
 
 - `ADMIN_SSH_CIDR` guarda o IP ou faixa de IP autorizada para administração.
-- `187.108.118.25/32` representa um único IP em notação CIDR.
+- `203.0.113.10/32` representa um único IP em notação CIDR.
 - `FAIL2BAN_IGNOREIP` monta uma lista de endereços que o Fail2Ban deve ignorar.
 - `127.0.0.1/8` representa o localhost em IPv4.
 - `::1` representa o localhost em IPv6.
 
-No seu caso, você deve trocar `187.108.118.25/32` pelo IP público da sua casa,
+No seu caso, você deve trocar `203.0.113.10/32` pelo IP público da sua casa,
 escritório ou local de administração.
 
 Importante: esse passo funciona melhor quando você tem um IP relativamente
@@ -1650,8 +1631,8 @@ Pelo `Justfile`, ela faz o seguinte por padrão:
   - `API_BASE_URL/scenario?mode=error`
 
 Na prática, isso cria um padrão previsível. É a melhor opção quando você quer
-gravar a tela, comparar dashboards ou repetir a mesma demonstração várias vezes
-sem depender do acaso.
+comparar dashboards ou repetir o mesmo comportamento várias vezes sem depender
+do acaso.
 
 ### Gerando caos para testar alertas
 

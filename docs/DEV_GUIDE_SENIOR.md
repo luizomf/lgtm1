@@ -3,7 +3,7 @@
 Este é o mesmo [DEV_GUIDE](./DEV_GUIDE.md), porém sem explicações. Voltado para
 usuários avançados.
 
-Obs.: são comandos que eu estou executando, então altere os valores.
+Obs.: altere os valores de exemplo antes de executar.
 
 ---
 
@@ -11,14 +11,14 @@ Obs.: são comandos que eu estou executando, então altere os valores.
 
 ```bash
 # Como root no VPS
-hostnamectl set-hostname kvm2
+hostnamectl set-hostname vps1
 sudo vim /etc/hosts
 ```
 
 Adicione a linha:
 
 ```text
-127.0.1.1       kvm2.inprod.cloud       kvm2
+127.0.1.1       vps1.example.com       vps1
 ```
 
 ---
@@ -26,7 +26,7 @@ Adicione a linha:
 ## Novo usuário (Servidor)
 
 ```bash
-export YOUR_USERNAME="luizotavio"
+export YOUR_USERNAME="adminuser"
 
 useradd -m -s /bin/bash $YOUR_USERNAME
 usermod -aG sudo $YOUR_USERNAME
@@ -41,20 +41,20 @@ su $YOUR_USERNAME
 
 ```bash
 # Computador LOCAL
-ssh-keygen -t ed25519 -f ~/.ssh/id_hostinger -C "USUARIO"
-ssh-copy-id -i ~/.ssh/id_hostinger.pub USUARIO@IP_OU_HOST_DO_VPS
+ssh-keygen -t ed25519 -f ~/.ssh/id_vps -C "USUARIO"
+ssh-copy-id -i ~/.ssh/id_vps.pub USUARIO@IP_OU_HOST_DO_VPS
 ```
 
 Atalho no `~/.ssh/config`:
 
 ```sshconfig
-Host kvm2
+Host my-vps
   IgnoreUnknown AddKeysToAgent,UseKeychain
   AddKeysToAgent yes
-  HostName inprod.cloud
-  User luizotavio
+  HostName vps1.example.com
+  User adminuser
   Port 22
-  IdentityFile ~/.ssh/id_hostinger
+  IdentityFile ~/.ssh/id_vps
 ```
 
 ---
@@ -76,8 +76,8 @@ sudo snap install just --classic # mais atualizado
 ## Git (Servidor)
 
 ```bash
-export GIT_USERNAME="luizomf"
-export GIT_EMAIL="luizomf@gmail.com"
+export GIT_USERNAME="YOUR_GIT_NAME"
+export GIT_EMAIL="you@example.com"
 
 git config --global user.name "$GIT_USERNAME"
 git config --global user.email "$GIT_EMAIL"
@@ -152,7 +152,7 @@ sudo sshd -T | grep -E 'permitrootlogin|passwordauthentication|pubkeyauthenticat
 ## Fail2ban
 
 ```bash
-export ADMIN_SSH_CIDR="187.108.118.25/32"
+export ADMIN_SSH_CIDR="203.0.113.10/32"
 export FAIL2BAN_IGNOREIP="$ADMIN_SSH_CIDR 127.0.0.1/8 ::1"
 
 sudo apt install fail2ban -y
@@ -290,10 +290,10 @@ Host github.com
 
 ```bash
 sudo vim ~/.ssh/config
-sudo mkdir /opt/lgtm
-sudo chown -R $USER:$USER /opt/lgtm
-cd /opt/lgtm
-git clone git@github.com:luizomf/lgtm1.git .
+sudo mkdir /opt/lgtm1
+sudo chown -R $USER:$USER /opt/lgtm1
+cd /opt/lgtm1
+git clone git@github.com:YOUR_GITHUB_USER/YOUR_REPOSITORY.git .
 ```
 
 ---
@@ -301,7 +301,7 @@ git clone git@github.com:luizomf/lgtm1.git .
 ## Deploy
 
 ```bash
-cd /opt/lgtm
+cd /opt/lgtm1
 cp .env.example .env
 
 # EDITE OS VALORES DO .env
@@ -318,8 +318,8 @@ just deploy
 Após atualizações, basta fazer pull e rodar `just deploy` novamente.
 
 ```bash
-cd /opt/lgtm
-git pull
+cd /opt/lgtm1
+git pull --rebase origin main
 just deploy
 ```
 

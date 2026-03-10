@@ -217,19 +217,19 @@ Error ratio:
 P50 latency:
 
 ```promql
-histogram_quantile(0.50, sum(rate(demo_api_response_delay_ms_milliseconds_bucket[5m])) by (le))
+1000 * histogram_quantile(0.50, sum(rate(traces_spanmetrics_latency_bucket{service="lgtm-demo-api", span_kind="SPAN_KIND_SERVER"}[5m])) by (le))
 ```
 
 P95 latency:
 
 ```promql
-histogram_quantile(0.95, sum(rate(demo_api_response_delay_ms_milliseconds_bucket[5m])) by (le))
+1000 * histogram_quantile(0.95, sum(rate(traces_spanmetrics_latency_bucket{service="lgtm-demo-api", span_kind="SPAN_KIND_SERVER"}[5m])) by (le))
 ```
 
 P99 latency:
 
 ```promql
-histogram_quantile(0.99, sum(rate(demo_api_response_delay_ms_milliseconds_bucket[5m])) by (le))
+1000 * histogram_quantile(0.99, sum(rate(traces_spanmetrics_latency_bucket{service="lgtm-demo-api", span_kind="SPAN_KIND_SERVER"}[5m])) by (le))
 ```
 
 Total requests by scenario mode in the last 30 minutes:
